@@ -6,6 +6,7 @@ import (
         "net/http"
         "net/http/httputil"
 	"os"
+	"strings"
 )
 
 const (
@@ -28,6 +29,17 @@ func loadConfig() ([]string, error) {
 	return lines, nil
 }
 
+func requestForValidPath(r *http.Request, config []string) bool {
+	path := strings.TrimPrefix(r.URL.Path, "/")
+	for _, s := range config {
+		if s == path {
+			return true
+		}
+	}
+
+	return false
+}
+
 func main() {
 	cfg, err := loadConfig()
 	if err !=nil {
@@ -44,7 +56,12 @@ func main() {
 		}
 
 		log.Println(string(bytes))
-                w.WriteHeader(http.StatusOK)
+		if strings.ToUpper(r.Method) == "POST" && requestForValidPath(r, cfg) {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
         })
         log.Fatal(http.ListenAndServe(":80", nil))
 }
