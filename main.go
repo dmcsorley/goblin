@@ -59,6 +59,7 @@ func main() {
 		if strings.ToUpper(r.Method) == "POST" && requestForValidPath(r, cfg) {
 			w.WriteHeader(http.StatusOK)
 		} else {
+			log.Println("Bad request for " + r.URL.Path)
 			w.WriteHeader(http.StatusBadRequest)
 		}
 
