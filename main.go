@@ -17,7 +17,7 @@ const (
 	CONFIG_FILE = "config.txt"
 )
 
-func loadConfig() ([]string, error) {
+func loadConfig() (map[string]string, error) {
 	file, err := os.Open(CONFIG_FILE)
 	if err != nil {
 		return nil, err
@@ -25,23 +25,13 @@ func loadConfig() ([]string, error) {
 
 	defer file.Close()
 
-	var lines []string
+	config := make(map[string]string)
 	s := bufio.NewScanner(file)
 	for s.Scan() {
-		lines = append(lines, s.Text())
+		line := strings.SplitN(s.Text(), ":", 2)
+		config["/" + strings.TrimSpace(line[0])] = strings.TrimSpace(line[1])
 	}
-	return lines, nil
-}
-
-func requestForValidPath(r *http.Request, config []string) bool {
-	path := strings.TrimPrefix(r.URL.Path, "/")
-	for _, s := range config {
-		if s == path {
-			return true
-		}
-	}
-
-	return false
+	return config, nil
 }
 
 func joblog(prefix string, message string, w io.Writer) {
@@ -71,7 +61,7 @@ func runJob(job *Job) {
 	}
 
 	cmdPrefix := job.Id[0:20]
-	cmd := exec.Command("git", "clone", "--progress", "https://github.com/dmcsorley/simpleci")
+	cmd := exec.Command("git", "clone", "--progress", job.GitURL)
 	cmd.Dir = job.Id
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
@@ -89,13 +79,13 @@ func runJob(job *Job) {
 	if err != nil {
 		joblog(job.Id, fmt.Sprintf("ERROR %v", err), os.Stdout)
 	} else {
-		joblog(job.Id, "COMPLETE", os.Stdout)
+		joblog(job.Id, "SUCCESS", os.Stdout)
 	}
 }
 
-func isValidRequest(r *http.Request, cfg []string) bool {
+func isValidRequest(r *http.Request, cfg map[string]string) bool {
 	return strings.ToUpper(r.Method) == "POST" &&
-		requestForValidPath(r, cfg)
+		cfg[r.URL.Path] != ""
 }
 
 func dumpRequest(r *http.Request) {
@@ -120,7 +110,7 @@ func main() {
 		now := time.Now()
 		dumpRequest(r)
 		if isValidRequest(r, cfg) {
-			job := NewJob(r.URL.Path, now)
+			job := NewJob(r.URL.Path, now, cfg)
 			log.Println("Received request to " + r.URL.Path + " for job " + job.Id)
 			w.WriteHeader(http.StatusOK)
 			go runJob(job);
