@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
-        "log"
-        "net/http"
-        "net/http/httputil"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httputil"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -40,6 +42,27 @@ func requestForValidPath(r *http.Request, config []string) bool {
 	return false
 }
 
+func pipe(rc io.ReadCloser, w io.Writer) {
+	s := bufio.NewScanner(rc)
+	for s.Scan() {
+		io.WriteString(w, s.Text() + "\n")
+	}
+}
+
+func runJob() {
+	cmd := exec.Command("git", "clone", "--progress", "https://github.com/dmcsorley/simpleci")
+	cmdout, _ := cmd.StdoutPipe()
+	cmderr, _ := cmd.StderrPipe()
+	if err := cmd.Start(); err != nil {
+		log.Println(err)
+		return
+	}
+
+	go pipe(cmdout, os.Stdout)
+	go pipe(cmderr, os.Stderr)
+	cmd.Wait()
+}
+
 func main() {
 	cfg, err := loadConfig()
 	if err !=nil {
@@ -48,7 +71,7 @@ func main() {
 
 	log.Println(cfg)
 
-        http.HandleFunc("/",  func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := httputil.DumpRequest(r, true)
 		if err != nil {
 			log.Println(err)
@@ -57,12 +80,13 @@ func main() {
 
 		log.Println(string(bytes))
 		if strings.ToUpper(r.Method) == "POST" && requestForValidPath(r, cfg) {
+			runJob();
 			w.WriteHeader(http.StatusOK)
 		} else {
 			log.Println("Bad request for " + r.URL.Path)
 			w.WriteHeader(http.StatusBadRequest)
 		}
 
-        })
-        log.Fatal(http.ListenAndServe(":80", nil))
+	})
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
