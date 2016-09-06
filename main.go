@@ -2,10 +2,8 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -18,31 +16,6 @@ import (
 const (
 	CONFIG_FILE = "config.json"
 )
-
-type BuildConfig struct {
-	Name string
-	Steps []map[string]string
-}
-
-type ServerConfig struct {
-	Builds []BuildConfig
-}
-
-func loadConfig() (*ServerConfig, error) {
-	bytes, err := ioutil.ReadFile(CONFIG_FILE)
-	if err != nil {
-		return nil, err
-	}
-
-	sc := &ServerConfig{}
-
-	err = json.Unmarshal(bytes, sc)
-	if err != nil {
-		return nil, err
-	}
-
-	return sc, nil
-}
 
 func joblog(prefix string, message string, w io.Writer) {
 	io.WriteString(
@@ -93,23 +66,12 @@ func runJob(job *Job) {
 	}
 }
 
-func configForPath(path string, cfg *ServerConfig) *BuildConfig {
-	name := strings.TrimPrefix(path, "/")
-	for _, c := range cfg.Builds {
-		if name == c.Name {
-			return &c
-		}
-	}
-
-	return nil
-}
-
 func isValidRequest(r *http.Request, cfg *ServerConfig) *BuildConfig {
 	if strings.ToUpper(r.Method) != "POST" {
 		return nil
 	}
 
-	return configForPath(r.URL.Path, cfg)
+	return cfg.BuildConfigForPath(r.URL.Path)
 }
 
 func dumpRequest(r *http.Request) {
@@ -123,7 +85,7 @@ func dumpRequest(r *http.Request) {
 }
 
 func main() {
-	cfg, err := loadConfig()
+	cfg, err := loadConfig(CONFIG_FILE)
 	if err !=nil {
 		log.Fatal(err)
 	}
