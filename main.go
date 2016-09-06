@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -14,24 +16,32 @@ import (
 )
 
 const (
-	CONFIG_FILE = "config.txt"
+	CONFIG_FILE = "config.json"
 )
 
-func loadConfig() (map[string]string, error) {
-	file, err := os.Open(CONFIG_FILE)
+type BuildConfig struct {
+	Name string
+	Steps []map[string]string
+}
+
+type ServerConfig struct {
+	Builds []BuildConfig
+}
+
+func loadConfig() (*ServerConfig, error) {
+	bytes, err := ioutil.ReadFile(CONFIG_FILE)
 	if err != nil {
 		return nil, err
 	}
 
-	defer file.Close()
+	sc := &ServerConfig{}
 
-	config := make(map[string]string)
-	s := bufio.NewScanner(file)
-	for s.Scan() {
-		line := strings.SplitN(s.Text(), ":", 2)
-		config["/" + strings.TrimSpace(line[0])] = strings.TrimSpace(line[1])
+	err = json.Unmarshal(bytes, sc)
+	if err != nil {
+		return nil, err
 	}
-	return config, nil
+
+	return sc, nil
 }
 
 func joblog(prefix string, message string, w io.Writer) {
@@ -83,9 +93,23 @@ func runJob(job *Job) {
 	}
 }
 
-func isValidRequest(r *http.Request, cfg map[string]string) bool {
-	return strings.ToUpper(r.Method) == "POST" &&
-		cfg[r.URL.Path] != ""
+func configForPath(path string, cfg *ServerConfig) *BuildConfig {
+	name := strings.TrimPrefix(path, "/")
+	for _, c := range cfg.Builds {
+		if name == c.Name {
+			return &c
+		}
+	}
+
+	return nil
+}
+
+func isValidRequest(r *http.Request, cfg *ServerConfig) *BuildConfig {
+	if strings.ToUpper(r.Method) != "POST" {
+		return nil
+	}
+
+	return configForPath(r.URL.Path, cfg)
 }
 
 func dumpRequest(r *http.Request) {
@@ -109,8 +133,9 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		now := time.Now()
 		dumpRequest(r)
-		if isValidRequest(r, cfg) {
-			job := NewJob(r.URL.Path, now, cfg)
+		bc := isValidRequest(r, cfg)
+		if bc != nil {
+			job := NewJob(r.URL.Path, now, bc)
 			log.Println("Received request to " + r.URL.Path + " for job " + job.Id)
 			w.WriteHeader(http.StatusOK)
 			go runJob(job);

@@ -1,0 +1,23 @@
+{
+  "builds": [
+    {
+      "name":"simpleci",
+      "steps": [
+        {
+          "type":"git-clone",
+          "url":"https://github.com/dmcsorley/simpleci"
+        }
+      ]
+    },
+    {
+      "name":"captainhook",
+      "steps": [
+        {
+          "type":"git-clone",
+          "url":"https://github.com/dmcsorley/captainhook"
+        }
+      ]
+    }
+
+  ]
+}

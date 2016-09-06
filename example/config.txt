@@ -1,2 +1,0 @@
-simpleci: https://github.com/dmcsorley/simpleci
-captainhook: https://github.com/dmcsorley/captainhook
