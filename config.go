@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"strings"
 )
 
 type BuildConfig struct {
@@ -29,15 +28,4 @@ func loadConfig(filename string) (*ServerConfig, error) {
 	}
 
 	return sc, nil
-}
-
-func (sc *ServerConfig) BuildConfigForPath(path string) *BuildConfig {
-	name := strings.TrimPrefix(path, "/")
-	for _, bc := range sc.Builds {
-		if name == bc.Name {
-			return &bc
-		}
-	}
-
-	return nil
 }
