@@ -1,15 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"os"
 	"time"
 )
 
 const (
 	CONFIG_FILE = "config.json"
+	LISTEN_ADDR = ":80"
 )
 
 func dumpRequest(r *http.Request) {
@@ -30,6 +33,9 @@ func main() {
 
 	log.Println(cfg)
 
+	hostname, _ := os.Hostname()
+	log.Println(fmt.Sprintf("Listening on %s%s", hostname, LISTEN_ADDR))
+
 	r := mux.NewRouter()
 	posts := r.Methods("POST").Subrouter()
 
@@ -43,5 +49,5 @@ func main() {
 			go job.Run()
 		})
 	}
-	log.Fatal(http.ListenAndServe(":80", r))
+	log.Fatal(http.ListenAndServe(LISTEN_ADDR, r))
 }
