@@ -49,8 +49,7 @@ func NewJob(t time.Time, bc *BuildConfig) *Job {
 	}
 }
 
-func cloneStep(dir string, stepPrefix string, cloneConfig map[string]string) error {
-	cmd := exec.Command("git", "clone", "--progress", cloneConfig["url"])
+func runInDirAndPipe(cmd *exec.Cmd, dir string, stepPrefix string) error {
 	cmd.Dir = dir
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
@@ -63,6 +62,28 @@ func cloneStep(dir string, stepPrefix string, cloneConfig map[string]string) err
 	}
 
 	return cmd.Wait()
+}
+
+func cloneStep(dir string, stepPrefix string, cloneConfig map[string]string) error {
+	cmd := exec.Command(
+		"git",
+		"clone",
+		"--progress",
+		cloneConfig["url"],
+		"clone",
+	)
+	return runInDirAndPipe(cmd, dir, stepPrefix)
+}
+
+func buildStep(dir string, stepPrefix string, buildConfig map[string]string) error {
+	cmd := exec.Command(
+		"docker",
+		"build",
+		 "-t",
+		buildConfig["image"] + ":" + stepPrefix,
+		".",
+	)
+	return runInDirAndPipe(cmd, dir + "/clone", stepPrefix)
 }
 
 func (job *Job) Run() {
@@ -82,6 +103,11 @@ func (job *Job) Run() {
 		switch s["type"] {
 		case "git-clone":
 			err = cloneStep(job.Id, stepPrefix, s)
+			if err != nil {
+				break Steps
+			}
+		case "docker-build":
+			err = buildStep(job.Id, stepPrefix, s)
 			if err != nil {
 				break Steps
 			}

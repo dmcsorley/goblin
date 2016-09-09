@@ -15,9 +15,12 @@
         {
           "type":"git-clone",
           "url":"https://github.com/dmcsorley/captainhook"
+        },
+        {
+          "type":"docker-build",
+          "image":"dmcsorley/captainhook"
         }
       ]
     }
-
   ]
 }
