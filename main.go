@@ -28,7 +28,7 @@ func dumpRequest(r *http.Request) {
 func main() {
 	cfg, err := loadConfig(CONFIG_FILE)
 	if err !=nil {
-		log.Fatal(err)
+		log.Fatal("Error loading server config: " + err.Error())
 	}
 
 	log.Println(cfg)
@@ -49,5 +49,5 @@ func main() {
 			go job.Run()
 		})
 	}
-	log.Fatal(http.ListenAndServe(LISTEN_ADDR, r))
+	log.Fatal("Error starting http server: " + http.ListenAndServe(LISTEN_ADDR, r).Error())
 }
