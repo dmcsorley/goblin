@@ -5,7 +5,17 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
+)
+
+const (
+	GitCloneStepType = "git-clone"
+	DockerBuildStepType = "docker-build"
+	URLKey = "url"
+	TypeKey = "type"
+	ImageKey = "image"
+	CloneDir = "clone"
 )
 
 type Stepper interface {
@@ -41,7 +51,7 @@ type GitCloneStep struct {
 }
 
 func newCloneStep(stepJson map[string]interface{}) (*GitCloneStep, error) {
-	url, err := asString("url", stepJson["url"])
+	url, err := asString(URLKey, stepJson[URLKey])
 	if err != nil {
 		return nil, err
 	}
@@ -49,13 +59,13 @@ func newCloneStep(stepJson map[string]interface{}) (*GitCloneStep, error) {
 }
 
 func (gcs *GitCloneStep) Step(dir string, stepPrefix string) error {
-	joblog(stepPrefix, "git-clone " + gcs.URL, os.Stdout)
+	joblog(stepPrefix, GitCloneStepType + " " + gcs.URL, os.Stdout)
 	cmd := exec.Command(
 		"git",
 		"clone",
 		"--progress",
 		gcs.URL,
-		"clone",
+		CloneDir,
 	)
 	return runInDirAndPipe(cmd, dir, stepPrefix)
 }
@@ -65,7 +75,7 @@ type DockerBuildStep struct {
 }
 
 func newBuildStep(stepJson map[string]interface{}) (*DockerBuildStep, error) {
-	image, err := asString("image", stepJson["image"])
+	image, err := asString(ImageKey, stepJson[ImageKey])
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +83,7 @@ func newBuildStep(stepJson map[string]interface{}) (*DockerBuildStep, error) {
 }
 
 func (dbs *DockerBuildStep) Step(dir string, stepPrefix string) error {
-	joblog(stepPrefix, "docker-build " + dbs.Image, os.Stdout)
+	joblog(stepPrefix, DockerBuildStepType + " " + dbs.Image, os.Stdout)
 	cmd := exec.Command(
 		"docker",
 		"build",
@@ -81,19 +91,19 @@ func (dbs *DockerBuildStep) Step(dir string, stepPrefix string) error {
 		dbs.Image + ":" + stepPrefix,
 		".",
 	)
-	return runInDirAndPipe(cmd, dir + "/clone", stepPrefix)
+	return runInDirAndPipe(cmd, filepath.Join(dir, CloneDir), stepPrefix)
 }
 
 func newStep(stepJson map[string]interface{}) (Stepper, error) {
-	typeValue, err := asString("type", stepJson["type"])
+	typeValue, err := asString(TypeKey, stepJson[TypeKey])
 	if err != nil {
 		return nil, err
 	}
 
 	switch typeValue {
-	case "git-clone":
+	case GitCloneStepType:
 		return newCloneStep(stepJson)
-	case "docker-build":
+	case DockerBuildStepType:
 		return newBuildStep(stepJson)
 	default:
 		return nil, errors.New(fmt.Sprintf("Unknown step %v", typeValue))
