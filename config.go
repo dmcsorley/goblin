@@ -2,16 +2,26 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 )
 
-type BuildConfig struct {
+type ServerRecord struct {
+	Builds []BuildRecord
+}
+
+type BuildRecord struct {
 	Name string
-	Steps []map[string]string
+	Steps []map[string]interface{}
 }
 
 type ServerConfig struct {
 	Builds []BuildConfig
+}
+
+type BuildConfig struct {
+	Name string
+	Steps []Stepper
 }
 
 func loadConfig(filename string) (*ServerConfig, error) {
@@ -20,12 +30,51 @@ func loadConfig(filename string) (*ServerConfig, error) {
 		return nil, err
 	}
 
-	sc := &ServerConfig{}
+	return loadConfigBytes(bytes)
+}
 
-	err = json.Unmarshal(bytes, sc)
+func loadConfigBytes(bytes []byte) (*ServerConfig, error) {
+	sr := &ServerRecord{}
+
+	err := json.Unmarshal(bytes, sr)
 	if err != nil {
 		return nil, err
 	}
 
+	if len(sr.Builds) == 0 {
+		return nil, errors.New("server config has no builds")
+	}
+
+	sc := &ServerConfig{}
+	for _, br := range sr.Builds {
+		bc, err := newBuild(br)
+		if err != nil {
+			return nil, err
+		}
+		sc.Builds = append(sc.Builds, bc)
+	}
+
 	return sc, nil
+}
+
+func newBuild(br BuildRecord) (BuildConfig, error) {
+	bc := BuildConfig{}
+	if br.Name == "" {
+		return bc, errors.New("build has no name")
+	}
+
+	if len(br.Steps) == 0 {
+		return bc, errors.New("build has no steps")
+	}
+
+	bc.Name = br.Name
+	for _, sjson := range br.Steps {
+		step, err := newStep(sjson)
+		if err != nil {
+			return bc, err
+		}
+		bc.Steps = append(bc.Steps, step)
+	}
+
+	return bc, nil
 }
