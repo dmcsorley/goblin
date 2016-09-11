@@ -60,7 +60,6 @@ func (job *Job) Run() {
 
 	for i, s := range job.buildConfig.Steps {
 		stepPrefix := cmdPrefix + "-" + strconv.Itoa(i)
-		//joblog(stepPrefix, s["type"], os.Stdout)
 		err = s.Step(job.Id, stepPrefix)
 		if err != nil {
 			joblog(job.Id, fmt.Sprintf("ERROR %v", err), os.Stdout)

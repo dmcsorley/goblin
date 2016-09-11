@@ -15,14 +15,14 @@ const (
 	LISTEN_ADDR = ":80"
 )
 
-func dumpRequest(r *http.Request) {
+func dumpRequest(r *http.Request) string {
 	bytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
 		log.Println(err)
-		return
+		return ""
 	}
 
-	log.Println(string(bytes))
+	return string(bytes)
 }
 
 func main() {
@@ -31,8 +31,6 @@ func main() {
 		log.Fatal("Error loading server config: " + err.Error())
 	}
 
-	log.Println(cfg)
-
 	hostname, _ := os.Hostname()
 	log.Println(fmt.Sprintf("Listening on %s%s", hostname, LISTEN_ADDR))
 
@@ -40,11 +38,12 @@ func main() {
 	posts := r.Methods("POST").Subrouter()
 
 	for _, bc := range cfg.Builds {
+		log.Println("Build configured on /" + bc.Name)
 		posts.HandleFunc("/" + bc.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
-			dumpRequest(r)
+			joblog("DEBUG", dumpRequest(r), os.Stdout)
 			job := NewJob(now, &bc)
-			log.Println("Received request to " + r.URL.Path + " for job " + job.Id)
+			joblog(job.Id, "Received build for " + r.URL.Path, os.Stdout)
 			w.WriteHeader(http.StatusOK)
 			go job.Run()
 		})

@@ -26,7 +26,7 @@ func runInDirAndPipe(cmd *exec.Cmd, dir string, stepPrefix string) error {
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
 	go pipe(stepPrefix, cmdout, os.Stdout)
-	go pipe(stepPrefix, cmderr, os.Stderr)
+	go pipe(stepPrefix, cmderr, os.Stdout)
 
 	time.Sleep(time.Second)
 	if err := cmd.Start(); err != nil {
@@ -49,6 +49,7 @@ func newCloneStep(stepJson map[string]interface{}) (*GitCloneStep, error) {
 }
 
 func (gcs *GitCloneStep) Step(dir string, stepPrefix string) error {
+	joblog(stepPrefix, "git-clone " + gcs.URL, os.Stdout)
 	cmd := exec.Command(
 		"git",
 		"clone",
@@ -72,6 +73,7 @@ func newBuildStep(stepJson map[string]interface{}) (*DockerBuildStep, error) {
 }
 
 func (dbs *DockerBuildStep) Step(dir string, stepPrefix string) error {
+	joblog(stepPrefix, "docker-build " + dbs.Image, os.Stdout)
 	cmd := exec.Command(
 		"docker",
 		"build",
