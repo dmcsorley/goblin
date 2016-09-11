@@ -38,11 +38,12 @@ func main() {
 	posts := r.Methods("POST").Subrouter()
 
 	for _, bc := range cfg.Builds {
-		log.Println("Build configured on /" + bc.Name)
-		posts.HandleFunc("/" + bc.Name, func(w http.ResponseWriter, r *http.Request) {
+		localConfig := bc
+		log.Println("Build configured on /" + localConfig.Name)
+		posts.HandleFunc("/" + localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 			joblog("DEBUG", dumpRequest(r), os.Stdout)
-			job := NewJob(now, &bc)
+			job := NewJob(now, &localConfig)
 			joblog(job.Id, "Received build for " + r.URL.Path, os.Stdout)
 			w.WriteHeader(http.StatusOK)
 			go job.Run()
