@@ -68,8 +68,8 @@ func newBuild(br BuildRecord) (BuildConfig, error) {
 	}
 
 	bc.Name = br.Name
-	for _, sjson := range br.Steps {
-		step, err := newStep(sjson)
+	for i, sjson := range br.Steps {
+		step, err := newStep(i, sjson)
 		if err != nil {
 			return bc, err
 		}

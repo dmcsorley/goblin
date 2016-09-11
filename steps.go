@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +20,7 @@ const (
 )
 
 type Stepper interface {
-	Step(dir string, prefix string) error
+	Step(job *Job) error
 }
 
 func asString(key string, i interface{}) (string, error) {
@@ -47,42 +48,47 @@ func runInDirAndPipe(cmd *exec.Cmd, dir string, stepPrefix string) error {
 }
 
 type GitCloneStep struct {
+	Index int
 	URL string
 }
 
-func newCloneStep(stepJson map[string]interface{}) (*GitCloneStep, error) {
+func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, error) {
 	url, err := asString(URLKey, stepJson[URLKey])
 	if err != nil {
 		return nil, err
 	}
-	return &GitCloneStep{URL:url}, nil
+	return &GitCloneStep{Index:index, URL:url}, nil
 }
 
-func (gcs *GitCloneStep) Step(dir string, stepPrefix string) error {
+func (gcs *GitCloneStep) Step(job *Job) error {
+	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(gcs.Index)
+	workDir := job.Id
 	joblog(stepPrefix, GitCloneStepType + " " + gcs.URL, os.Stdout)
 	cmd := exec.Command(
 		"git",
 		"clone",
-		"--progress",
 		gcs.URL,
 		CloneDir,
 	)
-	return runInDirAndPipe(cmd, dir, stepPrefix)
+	return runInDirAndPipe(cmd, workDir, stepPrefix)
 }
 
 type DockerBuildStep struct {
+	Index int
 	Image string
 }
 
-func newBuildStep(stepJson map[string]interface{}) (*DockerBuildStep, error) {
+func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep, error) {
 	image, err := asString(ImageKey, stepJson[ImageKey])
 	if err != nil {
 		return nil, err
 	}
-	return &DockerBuildStep{Image:image}, nil
+	return &DockerBuildStep{Index:index, Image:image}, nil
 }
 
-func (dbs *DockerBuildStep) Step(dir string, stepPrefix string) error {
+func (dbs *DockerBuildStep) Step(job *Job) error {
+	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(dbs.Index)
+	workDir := filepath.Join(job.Id, CloneDir)
 	joblog(stepPrefix, DockerBuildStepType + " " + dbs.Image, os.Stdout)
 	cmd := exec.Command(
 		"docker",
@@ -91,10 +97,10 @@ func (dbs *DockerBuildStep) Step(dir string, stepPrefix string) error {
 		dbs.Image + ":" + stepPrefix,
 		".",
 	)
-	return runInDirAndPipe(cmd, filepath.Join(dir, CloneDir), stepPrefix)
+	return runInDirAndPipe(cmd, workDir, stepPrefix)
 }
 
-func newStep(stepJson map[string]interface{}) (Stepper, error) {
+func newStep(index int, stepJson map[string]interface{}) (Stepper, error) {
 	typeValue, err := asString(TypeKey, stepJson[TypeKey])
 	if err != nil {
 		return nil, err
@@ -102,9 +108,9 @@ func newStep(stepJson map[string]interface{}) (Stepper, error) {
 
 	switch typeValue {
 	case GitCloneStepType:
-		return newCloneStep(stepJson)
+		return newCloneStep(index, stepJson)
 	case DockerBuildStepType:
-		return newBuildStep(stepJson)
+		return newBuildStep(index, stepJson)
 	default:
 		return nil, errors.New(fmt.Sprintf("Unknown step %v", typeValue))
 	}

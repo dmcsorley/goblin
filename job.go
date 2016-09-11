@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -56,11 +55,8 @@ func (job *Job) Run() {
 		return
 	}
 
-	cmdPrefix := job.Id[0:20]
-
-	for i, s := range job.buildConfig.Steps {
-		stepPrefix := cmdPrefix + "-" + strconv.Itoa(i)
-		err = s.Step(job.Id, stepPrefix)
+	for _, s := range job.buildConfig.Steps {
+		err = s.Step(job)
 		if err != nil {
 			joblog(job.Id, fmt.Sprintf("ERROR %v", err), os.Stdout)
 			return
