@@ -78,3 +78,12 @@ func newBuild(br BuildRecord) (BuildConfig, error) {
 
 	return bc, nil
 }
+
+func (sc *ServerConfig) FindBuildByName(name string) *BuildConfig {
+	for _, bc := range sc.Builds {
+		if bc.Name == name {
+			return &bc
+		}
+	}
+	return nil
+}

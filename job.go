@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"time"
 )
+
+const JOB_TIME_FORMAT = time.RFC3339Nano
 
 type Job struct {
 	Id string
@@ -36,7 +39,7 @@ func pipe(prefix string, rc io.ReadCloser, w io.Writer) {
 
 func NewJob(t time.Time, bc *BuildConfig) *Job {
 	hasher := sha1.New()
-	hasher.Write([]byte(t.Format(time.RFC3339Nano)))
+	hasher.Write([]byte(t.Format(JOB_TIME_FORMAT)))
 	hasher.Write([]byte(bc.Name))
 	id := hex.EncodeToString(hasher.Sum(nil))
 	return &Job{
@@ -47,7 +50,7 @@ func NewJob(t time.Time, bc *BuildConfig) *Job {
 }
 
 func (job *Job) Run() {
-	joblog(job.Id, "STARTING", os.Stdout)
+	joblog(job.Id, "STARTING " + job.buildConfig.Name, os.Stdout)
 	var err error
 	err = os.Mkdir(job.Id, os.ModeDir)
 	if err != nil {
@@ -64,4 +67,25 @@ func (job *Job) Run() {
 	}
 
 	joblog(job.Id, "SUCCESS", os.Stdout)
+}
+
+func (job *Job) DockerRun() {
+	containerName := "ci-" + job.Id
+	joblog(job.Id, "LAUNCHING " + containerName, os.Stdout)
+
+	cmd := exec.Command(
+		"docker",
+		"run",
+		"-d",
+		"--name=" + containerName,
+		"-v",
+		"/var/run/docker.sock:/var/run/docker.sock",
+		os.Getenv(ENV_IMAGE),
+		"app",
+		"-run",
+		job.buildConfig.Name,
+		"-time",
+		job.received.Format(JOB_TIME_FORMAT),
+	)
+	cmd.Run()
 }
