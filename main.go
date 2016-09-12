@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	CONFIG_FILE = "config.json"
+	CONFIG_FILE = "goblin.json"
 	LISTEN_ADDR = ":80"
 	ENV_IMAGE = "IMAGE"
 	RUN_FLAG = "run"

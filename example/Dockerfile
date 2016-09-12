@@ -1,3 +1,3 @@
-FROM dmcsorley/simpleci
+FROM dmcsorley/goblin
 
-ADD config.json .
+ADD goblin.json .
