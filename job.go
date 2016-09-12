@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"time"
@@ -19,22 +17,14 @@ type Job struct {
 	buildConfig *BuildConfig
 }
 
-func joblog(prefix string, message string, w io.Writer) {
-	io.WriteString(
-		w,
+func joblog(prefix string, message string) {
+	os.Stdout.WriteString(
 		fmt.Sprintf("%s %s %s\n",
 			time.Now().Format(time.RFC3339),
 			prefix,
 			message,
 		),
 	)
-}
-
-func pipe(prefix string, rc io.ReadCloser, w io.Writer) {
-	s := bufio.NewScanner(rc)
-	for s.Scan() {
-		joblog(prefix, s.Text(), w)
-	}
 }
 
 func NewJob(t time.Time, bc *BuildConfig) *Job {
@@ -50,28 +40,28 @@ func NewJob(t time.Time, bc *BuildConfig) *Job {
 }
 
 func (job *Job) Run() {
-	joblog(job.Id, "STARTING " + job.buildConfig.Name, os.Stdout)
+	joblog(job.Id, "STARTING " + job.buildConfig.Name)
 	var err error
 	err = os.Mkdir(job.Id, os.ModeDir)
 	if err != nil {
-		joblog(job.Id, fmt.Sprintf("ERROR %v", err), os.Stdout)
+		joblog(job.Id, fmt.Sprintf("ERROR %v", err))
 		return
 	}
 
 	for _, s := range job.buildConfig.Steps {
 		err = s.Step(job)
 		if err != nil {
-			joblog(job.Id, fmt.Sprintf("ERROR %v", err), os.Stdout)
+			joblog(job.Id, fmt.Sprintf("ERROR %v", err))
 			return
 		}
 	}
 
-	joblog(job.Id, "SUCCESS", os.Stdout)
+	joblog(job.Id, "SUCCESS")
 }
 
 func (job *Job) DockerRun() {
 	containerName := "ci-" + job.Id
-	joblog(job.Id, "LAUNCHING " + containerName, os.Stdout)
+	joblog(job.Id, "LAUNCHING " + containerName)
 
 	cmd := exec.Command(
 		"docker",

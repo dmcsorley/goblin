@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
-	"os"
+	"io"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -32,12 +33,19 @@ func asString(key string, i interface{}) (string, error) {
 	}
 }
 
+func pipe(prefix string, rc io.ReadCloser) {
+	s := bufio.NewScanner(rc)
+	for s.Scan() {
+		joblog(prefix, s.Text())
+	}
+}
+
 func runInDirAndPipe(cmd *exec.Cmd, dir string, stepPrefix string) error {
 	cmd.Dir = dir
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
-	go pipe(stepPrefix, cmdout, os.Stdout)
-	go pipe(stepPrefix, cmderr, os.Stdout)
+	go pipe(stepPrefix, cmdout)
+	go pipe(stepPrefix, cmderr)
 
 	time.Sleep(time.Second)
 	if err := cmd.Start(); err != nil {
@@ -63,7 +71,7 @@ func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, er
 func (gcs *GitCloneStep) Step(job *Job) error {
 	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(gcs.Index)
 	workDir := job.Id
-	joblog(stepPrefix, GitCloneStepType + " " + gcs.URL, os.Stdout)
+	joblog(stepPrefix, GitCloneStepType + " " + gcs.URL)
 	cmd := exec.Command(
 		"git",
 		"clone",
@@ -89,7 +97,7 @@ func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep,
 func (dbs *DockerBuildStep) Step(job *Job) error {
 	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(dbs.Index)
 	workDir := filepath.Join(job.Id, CloneDir)
-	joblog(stepPrefix, DockerBuildStepType + " " + dbs.Image, os.Stdout)
+	joblog(stepPrefix, DockerBuildStepType + " " + dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"build",

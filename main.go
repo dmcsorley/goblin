@@ -69,9 +69,9 @@ func serve(cfg *ServerConfig) {
 		log.Println("Build configured on /" + localConfig.Name)
 		posts.HandleFunc("/" + localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
-			joblog("DEBUG", dumpRequest(r), os.Stdout)
+			joblog("DEBUG", dumpRequest(r))
 			job := NewJob(now, &localConfig)
-			joblog(job.Id, "Received build for " + r.URL.Path, os.Stdout)
+			joblog(job.Id, "Received build for " + r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go job.DockerRun()
 		})
