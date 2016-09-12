@@ -71,7 +71,7 @@ func (job *Job) DockerRun() {
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
 		os.Getenv(ENV_IMAGE),
-		"app",
+		"/go/bin/goblin",
 		"-run",
 		job.buildConfig.Name,
 		"-time",
