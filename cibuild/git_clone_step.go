@@ -1,7 +1,10 @@
 package cibuild
 
 import (
+	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 type GitCloneStep struct {
@@ -28,4 +31,13 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 		CloneDir,
 	)
 	return runInDirAndPipe(cmd, workDir, pfx)
+}
+
+func (gcs *GitCloneStep) Cleanup(build *Build) {
+	pfx := build.stepPrefix(gcs.Index)
+	Log(pfx, "cleanup")
+	clonedDir := filepath.Join(build.Id, CloneDir)
+	if err := os.RemoveAll(clonedDir); err != nil {
+		Log(pfx, fmt.Sprintf("%v", err))
+	}
 }

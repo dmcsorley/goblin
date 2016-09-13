@@ -1,6 +1,7 @@
 package cibuild
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 )
@@ -30,4 +31,17 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 		".",
 	)
 	return runInDirAndPipe(cmd, workDir, pfx)
+}
+
+func (dbs *DockerBuildStep) Cleanup(build *Build) {
+	pfx := build.stepPrefix(dbs.Index)
+	Log(pfx, "cleanup")
+	cmd := exec.Command(
+		"docker",
+		"rmi",
+		dbs.Image + ":" + pfx,
+	)
+	if err := cmd.Run(); err != nil {
+		Log(pfx, fmt.Sprintf("%v", err))
+	}
 }

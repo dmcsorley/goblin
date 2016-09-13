@@ -54,6 +54,7 @@ func (build *Build) Run() {
 	}
 
 	for _, s := range build.config.Steps {
+		defer s.Cleanup(build)
 		err = s.Step(build)
 		if err != nil {
 			Log(build.Id, fmt.Sprintf("ERROR %v", err))

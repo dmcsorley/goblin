@@ -21,6 +21,7 @@ const (
 
 type Stepper interface {
 	Step(build *Build) error
+	Cleanup(build *Build)
 }
 
 func asString(key string, i interface{}) (string, error) {
