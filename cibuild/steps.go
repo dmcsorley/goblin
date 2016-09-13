@@ -1,9 +1,11 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/goblog"
 	"io"
 	"os/exec"
 	"strconv"
@@ -36,7 +38,7 @@ func asString(key string, i interface{}) (string, error) {
 func pipe(prefix string, rc io.ReadCloser) {
 	s := bufio.NewScanner(rc)
 	for s.Scan() {
-		Log(prefix, s.Text())
+		goblog.Log(prefix, s.Text())
 	}
 }
 

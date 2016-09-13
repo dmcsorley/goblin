@@ -1,7 +1,9 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
 	"fmt"
+	"github.com/dmcsorley/goblin/goblog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,7 +25,7 @@ func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, er
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
 	workDir := build.Id
-	Log(pfx, GitCloneStepType + " " + gcs.URL)
+	goblog.Log(pfx, GitCloneStepType + " " + gcs.URL)
 	cmd := exec.Command(
 		"git",
 		"clone",
@@ -35,9 +37,9 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 
 func (gcs *GitCloneStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(gcs.Index)
-	Log(pfx, "cleanup")
+	goblog.Log(pfx, "cleanup")
 	clonedDir := filepath.Join(build.Id, CloneDir)
 	if err := os.RemoveAll(clonedDir); err != nil {
-		Log(pfx, fmt.Sprintf("%v", err))
+		goblog.Log(pfx, fmt.Sprintf("%v", err))
 	}
 }

@@ -1,7 +1,9 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
 	"fmt"
+	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 	"path/filepath"
 )
@@ -22,7 +24,7 @@ func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep,
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
 	workDir := filepath.Join(build.Id, CloneDir)
-	Log(pfx, DockerBuildStepType + " " + dbs.Image)
+	goblog.Log(pfx, DockerBuildStepType + " " + dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"build",
@@ -35,13 +37,13 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(dbs.Index)
-	Log(pfx, "cleanup")
+	goblog.Log(pfx, "cleanup")
 	cmd := exec.Command(
 		"docker",
 		"rmi",
 		dbs.Image + ":" + pfx,
 	)
 	if err := cmd.Run(); err != nil {
-		Log(pfx, fmt.Sprintf("%v", err))
+		goblog.Log(pfx, fmt.Sprintf("%v", err))
 	}
 }

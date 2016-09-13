@@ -1,9 +1,11 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/dmcsorley/goblin/goblog"
 	"os"
 	"os/exec"
 	"time"
@@ -22,16 +24,6 @@ type Build struct {
 	config *BuildConfig
 }
 
-func Log(prefix string, message string) {
-	os.Stdout.WriteString(
-		fmt.Sprintf("%s %s %s\n",
-			time.Now().Format(time.RFC3339),
-			prefix,
-			message,
-		),
-	)
-}
-
 func New(t time.Time, bc *BuildConfig) *Build {
 	hasher := sha1.New()
 	hasher.Write([]byte(t.Format(TimeFormat)))
@@ -45,34 +37,39 @@ func New(t time.Time, bc *BuildConfig) *Build {
 }
 
 func (build *Build) Run() {
-	Log(build.Id, "STARTING " + build.config.Name)
+	goblog.Log(build.Id, "STARTING " + build.config.Name)
 	var err error
 	err = os.Mkdir(build.Id, os.ModeDir)
 	if err != nil {
-		Log(build.Id, fmt.Sprintf("ERROR %v", err))
-		return
+		goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+		os.Exit(1)
 	}
 
 	for _, s := range build.config.Steps {
 		defer s.Cleanup(build)
 		err = s.Step(build)
 		if err != nil {
-			Log(build.Id, fmt.Sprintf("ERROR %v", err))
-			return
+			goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+			os.Exit(1)
 		}
 	}
 
-	Log(build.Id, "SUCCESS")
+	goblog.Log(build.Id, "SUCCESS")
 }
 
 func (build *Build) DockerRun(image string) {
 	containerName := "ci-" + build.Id
-	Log(build.Id, "LAUNCHING " + containerName)
+	goblog.Log(build.Id, "LAUNCHING " + containerName)
+
+	ts := build.received.Format(TimeFormat)
 
 	cmd := exec.Command(
 		"docker",
 		"run",
 		"-d",
+		"--label=goblin.build=" + build.config.Name,
+		"--label=goblin.id=" + build.Id,
+		"--label=goblin.time=" + ts,
 		"--name=" + containerName,
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
@@ -81,7 +78,7 @@ func (build *Build) DockerRun(image string) {
 		"-run",
 		build.config.Name,
 		"-time",
-		build.received.Format(TimeFormat),
+		ts,
 	)
 	cmd.Run()
 }

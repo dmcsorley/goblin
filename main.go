@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/dmcsorley/goblin/cibuild"
+	"github.com/dmcsorley/goblin/goblog"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -75,10 +76,10 @@ func serve(cfg *ServerConfig) {
 		posts.HandleFunc("/" + localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 			if debugFlag {
-				cibuild.Log("DEBUG", dumpRequest(r))
+				goblog.Log("DEBUG", dumpRequest(r))
 			}
 			build := cibuild.New(now, &localConfig)
-			cibuild.Log(build.Id, "Received build for " + r.URL.Path)
+			goblog.Log(build.Id, "Received build for " + r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go build.DockerRun(image)
 		})
