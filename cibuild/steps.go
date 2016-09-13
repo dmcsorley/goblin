@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -57,59 +56,6 @@ func runInDirAndPipe(cmd *exec.Cmd, dir string, prefix string) error {
 	}
 
 	return cmd.Wait()
-}
-
-type GitCloneStep struct {
-	Index int
-	URL string
-}
-
-func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, error) {
-	url, err := asString(URLKey, stepJson[URLKey])
-	if err != nil {
-		return nil, err
-	}
-	return &GitCloneStep{Index:index, URL:url}, nil
-}
-
-func (gcs *GitCloneStep) Step(build *Build) error {
-	pfx := build.stepPrefix(gcs.Index)
-	workDir := build.Id
-	Log(pfx, GitCloneStepType + " " + gcs.URL)
-	cmd := exec.Command(
-		"git",
-		"clone",
-		gcs.URL,
-		CloneDir,
-	)
-	return runInDirAndPipe(cmd, workDir, pfx)
-}
-
-type DockerBuildStep struct {
-	Index int
-	Image string
-}
-
-func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep, error) {
-	image, err := asString(ImageKey, stepJson[ImageKey])
-	if err != nil {
-		return nil, err
-	}
-	return &DockerBuildStep{Index:index, Image:image}, nil
-}
-
-func (dbs *DockerBuildStep) Step(build *Build) error {
-	pfx := build.stepPrefix(dbs.Index)
-	workDir := filepath.Join(build.Id, CloneDir)
-	Log(pfx, DockerBuildStepType + " " + dbs.Image)
-	cmd := exec.Command(
-		"docker",
-		"build",
-		 "-t",
-		dbs.Image + ":" + pfx,
-		".",
-	)
-	return runInDirAndPipe(cmd, workDir, pfx)
 }
 
 func NewStep(index int, stepJson map[string]interface{}) (Stepper, error) {
