@@ -1,8 +1,10 @@
+// import github.com/dmcsorley/goblin
 package main
 
 import (
 	"encoding/json"
 	"errors"
+	"github.com/dmcsorley/goblin/cibuild"
 	"io/ioutil"
 )
 
@@ -16,12 +18,16 @@ type BuildRecord struct {
 }
 
 type ServerConfig struct {
-	Builds []BuildConfig
+	Builds []cibuild.BuildConfig
 }
 
-type BuildConfig struct {
-	Name string
-	Steps []Stepper
+func (sc *ServerConfig) FindBuildByName(name string) *cibuild.BuildConfig {
+	for _, bc := range sc.Builds {
+		if bc.Name == name {
+			return &bc
+		}
+	}
+	return nil
 }
 
 func loadConfig(filename string) (*ServerConfig, error) {
@@ -57,8 +63,8 @@ func loadConfigBytes(bytes []byte) (*ServerConfig, error) {
 	return sc, nil
 }
 
-func newBuild(br BuildRecord) (BuildConfig, error) {
-	bc := BuildConfig{}
+func newBuild(br BuildRecord) (cibuild.BuildConfig, error) {
+	bc := cibuild.BuildConfig{}
 	if br.Name == "" {
 		return bc, errors.New("build has no name")
 	}
@@ -69,7 +75,7 @@ func newBuild(br BuildRecord) (BuildConfig, error) {
 
 	bc.Name = br.Name
 	for i, sjson := range br.Steps {
-		step, err := newStep(i, sjson)
+		step, err := cibuild.NewStep(i, sjson)
 		if err != nil {
 			return bc, err
 		}
@@ -77,13 +83,4 @@ func newBuild(br BuildRecord) (BuildConfig, error) {
 	}
 
 	return bc, nil
-}
-
-func (sc *ServerConfig) FindBuildByName(name string) *BuildConfig {
-	for _, bc := range sc.Builds {
-		if bc.Name == name {
-			return &bc
-		}
-	}
-	return nil
 }

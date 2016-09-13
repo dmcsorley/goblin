@@ -1,8 +1,10 @@
+// import github.com/dmcsorley/goblin
 package main
 
 import (
 	"flag"
 	"fmt"
+	"github.com/dmcsorley/goblin/cibuild"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -34,7 +36,7 @@ var timeFlag string
 
 func init() {
 	flag.StringVar(&runFlag, RUN_FLAG, "", "build to run from config file")
-	flag.StringVar(&timeFlag, TIME_FLAG, "", "timestamp of job to run")
+	flag.StringVar(&timeFlag, TIME_FLAG, "", "timestamp of build to run")
 }
 
 func main() {
@@ -46,7 +48,7 @@ func main() {
 	}
 
 	if runFlag != "" && timeFlag != "" {
-		runJob(cfg, runFlag, timeFlag)
+		runBuild(cfg, runFlag, timeFlag)
 	} else {
 		serve(cfg)
 	}
@@ -69,27 +71,27 @@ func serve(cfg *ServerConfig) {
 		log.Println("Build configured on /" + localConfig.Name)
 		posts.HandleFunc("/" + localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
-			joblog("DEBUG", dumpRequest(r))
-			job := NewJob(now, &localConfig)
-			joblog(job.Id, "Received build for " + r.URL.Path)
+			cibuild.Log("DEBUG", dumpRequest(r))
+			build := cibuild.New(now, &localConfig)
+			cibuild.Log(build.Id, "Received build for " + r.URL.Path)
 			w.WriteHeader(http.StatusOK)
-			go job.DockerRun()
+			go build.DockerRun(image)
 		})
 	}
 	log.Fatal("Error starting http server: " + http.ListenAndServe(LISTEN_ADDR, r).Error())
 }
 
-func runJob(cfg *ServerConfig, buildName string, timeStamp string) {
+func runBuild(cfg *ServerConfig, buildName string, timeStamp string) {
 	bc := cfg.FindBuildByName(buildName)
 	if bc == nil {
 		log.Fatal("No build found with name " + buildName)
 	}
 
-	t, err := time.Parse(JOB_TIME_FORMAT, timeStamp)
+	t, err := time.Parse(cibuild.TimeFormat, timeStamp)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	job := NewJob(t, bc)
-	job.Run()
+	build := cibuild.New(t, bc)
+	build.Run()
 }

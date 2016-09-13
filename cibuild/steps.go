@@ -1,4 +1,4 @@
-package main
+package cibuild
 
 import (
 	"bufio"
@@ -21,7 +21,7 @@ const (
 )
 
 type Stepper interface {
-	Step(job *Job) error
+	Step(build *Build) error
 }
 
 func asString(key string, i interface{}) (string, error) {
@@ -36,16 +36,20 @@ func asString(key string, i interface{}) (string, error) {
 func pipe(prefix string, rc io.ReadCloser) {
 	s := bufio.NewScanner(rc)
 	for s.Scan() {
-		joblog(prefix, s.Text())
+		Log(prefix, s.Text())
 	}
 }
 
-func runInDirAndPipe(cmd *exec.Cmd, dir string, stepPrefix string) error {
+func (build *Build) stepPrefix(index int) string {
+	return build.Id[0:20] + "-" + strconv.Itoa(index)
+}
+
+func runInDirAndPipe(cmd *exec.Cmd, dir string, prefix string) error {
 	cmd.Dir = dir
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
-	go pipe(stepPrefix, cmdout)
-	go pipe(stepPrefix, cmderr)
+	go pipe(prefix, cmdout)
+	go pipe(prefix, cmderr)
 
 	time.Sleep(time.Second)
 	if err := cmd.Start(); err != nil {
@@ -68,17 +72,17 @@ func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, er
 	return &GitCloneStep{Index:index, URL:url}, nil
 }
 
-func (gcs *GitCloneStep) Step(job *Job) error {
-	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(gcs.Index)
-	workDir := job.Id
-	joblog(stepPrefix, GitCloneStepType + " " + gcs.URL)
+func (gcs *GitCloneStep) Step(build *Build) error {
+	pfx := build.stepPrefix(gcs.Index)
+	workDir := build.Id
+	Log(pfx, GitCloneStepType + " " + gcs.URL)
 	cmd := exec.Command(
 		"git",
 		"clone",
 		gcs.URL,
 		CloneDir,
 	)
-	return runInDirAndPipe(cmd, workDir, stepPrefix)
+	return runInDirAndPipe(cmd, workDir, pfx)
 }
 
 type DockerBuildStep struct {
@@ -94,21 +98,21 @@ func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep,
 	return &DockerBuildStep{Index:index, Image:image}, nil
 }
 
-func (dbs *DockerBuildStep) Step(job *Job) error {
-	stepPrefix := job.Id[0:20] + "-" + strconv.Itoa(dbs.Index)
-	workDir := filepath.Join(job.Id, CloneDir)
-	joblog(stepPrefix, DockerBuildStepType + " " + dbs.Image)
+func (dbs *DockerBuildStep) Step(build *Build) error {
+	pfx := build.stepPrefix(dbs.Index)
+	workDir := filepath.Join(build.Id, CloneDir)
+	Log(pfx, DockerBuildStepType + " " + dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"build",
 		 "-t",
-		dbs.Image + ":" + stepPrefix,
+		dbs.Image + ":" + pfx,
 		".",
 	)
-	return runInDirAndPipe(cmd, workDir, stepPrefix)
+	return runInDirAndPipe(cmd, workDir, pfx)
 }
 
-func newStep(index int, stepJson map[string]interface{}) (Stepper, error) {
+func NewStep(index int, stepJson map[string]interface{}) (Stepper, error) {
 	typeValue, err := asString(TypeKey, stepJson[TypeKey])
 	if err != nil {
 		return nil, err
