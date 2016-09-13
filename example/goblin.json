@@ -1,11 +1,11 @@
 {
   "builds": [
     {
-      "name":"simpleci",
+      "name":"goblin",
       "steps": [
         {
           "type":"git-clone",
-          "url":"https://github.com/dmcsorley/simpleci"
+          "url":"https://github.com/dmcsorley/goblin"
         }
       ]
     },
