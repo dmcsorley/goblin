@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/dmcsorley/goblin/cibuild"
+	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
 	"github.com/gorilla/mux"
 	"log"
@@ -84,6 +85,8 @@ func serve(cfg *ServerConfig) {
 			go build.DockerRun(image)
 		})
 	}
+
+	go gobdocker.ListenForBuildExits()
 	log.Fatal("Error starting http server: " + http.ListenAndServe(LISTEN_ADDR, r).Error())
 }
 
