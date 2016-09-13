@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
 	"os"
 	"os/exec"
@@ -24,11 +25,15 @@ type Build struct {
 	config *BuildConfig
 }
 
-func New(t time.Time, bc *BuildConfig) *Build {
+func buildHash(timestamp string, buildName string) string {
 	hasher := sha1.New()
-	hasher.Write([]byte(t.Format(TimeFormat)))
-	hasher.Write([]byte(bc.Name))
-	id := hex.EncodeToString(hasher.Sum(nil))
+	hasher.Write([]byte(timestamp))
+	hasher.Write([]byte(buildName))
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func New(t time.Time, bc *BuildConfig) *Build {
+	id := buildHash(t.Format(TimeFormat), bc.Name)
 	return &Build{
 		Id: id,
 		received: t,
@@ -81,4 +86,8 @@ func (build *Build) DockerRun(image string) {
 		ts,
 	)
 	cmd.Run()
+}
+
+func Cleanup(containerId string, buildName string, buildTime string) {
+	gobdocker.RemoveContainer(containerId)
 }

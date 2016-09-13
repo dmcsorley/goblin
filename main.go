@@ -59,6 +59,15 @@ func main() {
 	}
 }
 
+func cleanupBuild(eb *gobdocker.ExitedBuild) {
+	goblog.Log(
+		eb.Id,
+		"EXITED " + eb.Exit,
+	)
+
+	cibuild.Cleanup(eb.ContainerId, eb.Name, eb.Time)
+}
+
 func serve(cfg *ServerConfig) {
 	image := os.Getenv(ENV_IMAGE)
 	if image == "" {
@@ -86,7 +95,7 @@ func serve(cfg *ServerConfig) {
 		})
 	}
 
-	go gobdocker.ListenForBuildExits()
+	go gobdocker.ListenForBuildExits(cleanupBuild)
 	log.Fatal("Error starting http server: " + http.ListenAndServe(LISTEN_ADDR, r).Error())
 }
 
