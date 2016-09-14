@@ -35,7 +35,7 @@ func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep,
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	workDir := build.Id
+	workDir := WorkDir
 	if dbs.Dir != "" {
 		workDir = filepath.Join(workDir, dbs.Dir)
 	}

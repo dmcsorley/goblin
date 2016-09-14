@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const TimeFormat = time.RFC3339Nano
+const (
+	TimeFormat = time.RFC3339Nano
+	WorkDir = "/tmp/workdir"
+)
 
 type BuildConfig struct {
 	Name string
@@ -62,7 +65,18 @@ func (build *Build) Run() {
 	goblog.Log(build.Id, "SUCCESS")
 }
 
+func (build *Build) createVolume() (string, error) {
+	volumeName := "goblin-volume-" + build.Id
+	return gobdocker.CreateVolume(volumeName)
+}
+
 func (build *Build) DockerRun(image string) {
+	volumeName, err := build.createVolume()
+	if err != nil {
+		goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+		return
+	}
+
 	containerName := "ci-" + build.Id
 	goblog.Log(build.Id, "LAUNCHING " + containerName)
 
@@ -76,6 +90,8 @@ func (build *Build) DockerRun(image string) {
 		"--label=goblin.id=" + build.Id,
 		"--label=goblin.time=" + ts,
 		"--name=" + containerName,
+		"-v",
+		volumeName + ":" + WorkDir,
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
 		image,

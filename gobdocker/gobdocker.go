@@ -76,3 +76,21 @@ func RemoveContainer(name string) {
 		log.Println(err)
 	}
 }
+
+func CreateVolume(name string) (string, error) {
+	defaultHeaders := map[string]string{"User-Agent": "engine-api-cli-1.0"}
+	cli, _ := client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)
+
+	volume, err := cli.VolumeCreate(
+		context.Background(),
+		types.VolumeCreateRequest{
+			Name: name,
+		},
+	)
+
+	if err != nil {
+		return "", err
+	}
+
+	return volume.Name, nil
+}

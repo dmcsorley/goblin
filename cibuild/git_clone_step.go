@@ -21,7 +21,7 @@ func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, er
 
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
-	workDir := build.Id
+	workDir := WorkDir
 	goblog.Log(pfx, GitCloneStepType + " " + gcs.URL)
 	cmd := exec.Command(
 		"git",
