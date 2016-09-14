@@ -65,7 +65,7 @@ func cleanupBuild(eb *gobdocker.ExitedBuild) {
 		"EXITED " + eb.Exit,
 	)
 
-	cibuild.Cleanup(eb.ContainerId, eb.Name, eb.Time)
+	cibuild.Cleanup(eb)
 }
 
 func serve(cfg *ServerConfig) {

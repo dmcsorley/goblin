@@ -15,6 +15,7 @@ import (
 const (
 	TimeFormat = time.RFC3339Nano
 	WorkDir = "/tmp/workdir"
+	VolumePrefix = "goblin-volume-"
 )
 
 type BuildConfig struct {
@@ -66,7 +67,7 @@ func (build *Build) Run() {
 }
 
 func (build *Build) createVolume() (string, error) {
-	volumeName := "goblin-volume-" + build.Id
+	volumeName := VolumePrefix + build.Id
 	return gobdocker.CreateVolume(volumeName)
 }
 
@@ -104,6 +105,7 @@ func (build *Build) DockerRun(image string) {
 	cmd.Run()
 }
 
-func Cleanup(containerId string, buildName string, buildTime string) {
-	gobdocker.RemoveContainer(containerId)
+func Cleanup(eb *gobdocker.ExitedBuild) {
+	gobdocker.RemoveContainer(eb.ContainerId)
+	gobdocker.RemoveVolume(VolumePrefix + eb.Id)
 }
