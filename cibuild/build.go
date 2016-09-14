@@ -15,6 +15,7 @@ import (
 const (
 	TimeFormat = time.RFC3339Nano
 	WorkDir = "/tmp/workdir"
+	BuildContainerPrefix = "goblin-build-"
 	VolumePrefix = "goblin-volume-"
 )
 
@@ -78,7 +79,7 @@ func (build *Build) DockerRun(image string) {
 		return
 	}
 
-	containerName := "ci-" + build.Id
+	containerName := BuildContainerPrefix + build.Id
 	goblog.Log(build.Id, "LAUNCHING " + containerName)
 
 	ts := build.received.Format(TimeFormat)
