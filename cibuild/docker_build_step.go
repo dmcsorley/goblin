@@ -11,19 +11,34 @@ import (
 type DockerBuildStep struct {
 	Index int
 	Image string
+	Dir string
 }
 
 func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep, error) {
+	step := &DockerBuildStep{Index: index}
 	image, err := asString(ImageKey, stepJson[ImageKey])
 	if err != nil {
 		return nil, err
 	}
-	return &DockerBuildStep{Index:index, Image:image}, nil
+	step.Image = image
+
+	if stepJson[DirKey] != nil {
+		dir, err := asString(DirKey, stepJson[DirKey])
+		if err != nil {
+			return nil, err
+		}
+		step.Dir = dir
+	}
+
+	return step, nil
 }
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	workDir := filepath.Join(build.Id, CloneDir)
+	workDir := build.Id
+	if dbs.Dir != "" {
+		workDir = filepath.Join(workDir, dbs.Dir)
+	}
 	goblog.Log(pfx, DockerBuildStepType + " " + dbs.Image)
 	cmd := exec.Command(
 		"docker",
@@ -37,7 +52,7 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(dbs.Index)
-	goblog.Log(pfx, "cleanup")
+	goblog.Log(pfx, "removing intermediate image")
 	cmd := exec.Command(
 		"docker",
 		"rmi",

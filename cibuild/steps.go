@@ -18,7 +18,7 @@ const (
 	URLKey = "url"
 	TypeKey = "type"
 	ImageKey = "image"
-	CloneDir = "clone"
+	DirKey = "dir"
 )
 
 type Stepper interface {

@@ -18,7 +18,8 @@
         },
         {
           "type":"docker-build",
-          "image":"dmcsorley/captainhook"
+          "image":"dmcsorley/captainhook",
+          "dir":"captainhook"
         }
       ]
     }
