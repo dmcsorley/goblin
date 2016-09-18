@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/hashicorp/hcl"
+	"strings"
 )
 
 type Record struct {
@@ -17,6 +18,15 @@ type StepRecord struct {
 	Url string
 	Image string
 	DecodedFields []string `hcl:",decodedFields"`
+}
+
+func (sr *StepRecord) HasField(s string) bool {
+	for _, f := range sr.DecodedFields {
+		if strings.EqualFold(s, f) {
+			return true
+		}
+	}
+	return false
 }
 
 func LoadBytes(b []byte) (*Record, error) {

@@ -14,6 +14,5 @@ build captainhook {
 
   step docker-build {
     image = "dmcsorley/captainhook"
-    dir = "captainhook"
   }
 }

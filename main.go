@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	CONFIG_FILE = "goblin.json"
+	CONFIG_FILE = "goblin.hcl"
 	LISTEN_ADDR = ":80"
 	ENV_IMAGE = "IMAGE"
 	DEBUG_FLAG = "debug"
@@ -68,7 +68,7 @@ func cleanupBuild(eb *gobdocker.ExitedBuild) {
 	cibuild.Cleanup(eb)
 }
 
-func serve(cfg *ServerConfig) {
+func serve(cfg *Goblin) {
 	image := os.Getenv(ENV_IMAGE)
 	if image == "" {
 		log.Fatal(ENV_IMAGE + " environment variable is required")
@@ -99,7 +99,7 @@ func serve(cfg *ServerConfig) {
 	log.Fatal("Error starting http server: " + http.ListenAndServe(LISTEN_ADDR, r).Error())
 }
 
-func runBuild(cfg *ServerConfig, buildName string, timeStamp string) {
+func runBuild(cfg *Goblin, buildName string, timeStamp string) {
 	bc := cfg.Builds[buildName]
 	if bc == nil {
 		log.Fatal("No build found with name " + buildName)

@@ -1,3 +1,3 @@
 FROM dmcsorley/goblin
 
-ADD goblin.json .
+ADD goblin.hcl .

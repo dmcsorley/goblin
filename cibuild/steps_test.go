@@ -1,15 +1,15 @@
+// import github.com/dmcsorley/goblin/config
 package cibuild
 
 import (
+	"github.com/dmcsorley/goblin/config"
 	"testing"
 )
 
 func TestUnknownStepTypeFails(t *testing.T) {
 	_, err := NewStep(
 		0,
-		map[string]interface{}{
-			"type": "unknown",
-		},
+		&config.StepRecord{Type:"unknown"},
 	)
 
 	if err == nil {

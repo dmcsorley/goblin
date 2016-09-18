@@ -15,8 +15,8 @@ RUN cd /tmp && \
 
 COPY . /go/src/github.com/dmcsorley/goblin
 
-RUN go get -d && \
-  go install
+RUN go get -d -v && \
+  go install -v
 
 CMD exec /go/bin/goblin
 

@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/goblog"
 	"io"
 	"os/exec"
@@ -15,23 +16,13 @@ import (
 const (
 	GitCloneStepType = "git-clone"
 	DockerBuildStepType = "docker-build"
-	URLKey = "url"
-	TypeKey = "type"
+	UrlKey = "url"
 	ImageKey = "image"
 )
 
 type Stepper interface {
 	Step(build *Build) error
 	Cleanup(build *Build)
-}
-
-func asString(key string, i interface{}) (string, error) {
-	switch value := i.(type) {
-	case string:
-		return value, nil
-	default:
-		return "", errors.New(fmt.Sprintf("expected a string for %v", key))
-	}
 }
 
 func pipe(prefix string, rc io.ReadCloser) {
@@ -60,18 +51,13 @@ func runInDirAndPipe(cmd *exec.Cmd, dir string, prefix string) error {
 	return cmd.Wait()
 }
 
-func NewStep(index int, stepJson map[string]interface{}) (Stepper, error) {
-	typeValue, err := asString(TypeKey, stepJson[TypeKey])
-	if err != nil {
-		return nil, err
-	}
-
-	switch typeValue {
+func NewStep(index int, sr *config.StepRecord) (Stepper, error) {
+	switch sr.Type {
 	case GitCloneStepType:
-		return newCloneStep(index, stepJson)
+		return newCloneStep(index, sr)
 	case DockerBuildStepType:
-		return newBuildStep(index, stepJson)
+		return newBuildStep(index, sr)
 	default:
-		return nil, errors.New(fmt.Sprintf("Unknown step %v", typeValue))
+		return nil, errors.New(fmt.Sprintf("Unknown step %v", sr.Type))
 	}
 }

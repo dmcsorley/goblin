@@ -1,60 +1,25 @@
+// import github.com/dmcsorley/goblin
 package main
 
 import (
+	"github.com/dmcsorley/goblin/config"
 	"testing"
 )
 
-func expectLoadConfigBytesFailure(t *testing.T, jsonString string, errorMessage string) {
-	_, err := loadConfigBytes([]byte(jsonString))
+func TestServerConfigRequiresBuild(t *testing.T) {
+	_, err := configRecordAsGoblin(&config.Record{})
 	if err == nil {
-		t.Error(errorMessage)
+		t.Error("should have failed for empty builds")
 	}
 }
 
-func TestEmptyServerConfig(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		"",
-		"should have failed on empty server config",
-	)
-}
-
-func TestServerConfigRequiresBuild(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		"{}",
-		"should have failed when server config has no builds",
-	)
-}
-
-func TestServerConfigNonObjectBuilds(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[1, 2, 3]}`,
-		"should have failed when builds are not JSON objects",
-	)
-}
-
-func TestBuildConfigRequiresName(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{}]}`,
-		"should have failed when build has no name",
-	)
-}
-
-func TestBuildConfigRequiresNameIsString(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{"name":true}]}`,
-		"should have failed when build name is not string",
-	)
-}
-
 func TestBuildConfigRequiresStep(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{"name":"aname"}]}`,
-		"should have failed when build has no steps",
-	)
+	_, err := configRecordAsGoblin(&config.Record{
+		Builds: map[string]*config.BuildRecord{
+			"foo": &config.BuildRecord{},
+		},
+	})
+	if err == nil {
+		t.Error("should have failed for empty steps")
+	}
 }

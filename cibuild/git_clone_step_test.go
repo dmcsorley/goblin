@@ -1,15 +1,15 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
+	"github.com/dmcsorley/goblin/config"
 	"testing"
 )
 
 func TestGitCloneStepRequiresUrl(t *testing.T) {
 	_, err := newCloneStep(
 		0,
-		map[string]interface{}{
-			TypeKey: GitCloneStepType,
-		},
+		&config.StepRecord{Type:GitCloneStepType},
 	)
 
 	if err == nil {

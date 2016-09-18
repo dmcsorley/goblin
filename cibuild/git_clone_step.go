@@ -2,31 +2,32 @@
 package cibuild
 
 import (
+	"errors"
+	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
 
 type GitCloneStep struct {
 	Index int
-	URL string
+	Url string
 }
 
-func newCloneStep(index int, stepJson map[string]interface{}) (*GitCloneStep, error) {
-	url, err := asString(URLKey, stepJson[URLKey])
-	if err != nil {
-		return nil, err
+func newCloneStep(index int, sr *config.StepRecord) (*GitCloneStep, error) {
+	if !sr.HasField(UrlKey) {
+		return nil, errors.New(GitCloneStepType + " requires " + UrlKey)
 	}
-	return &GitCloneStep{Index:index, URL:url}, nil
+	return &GitCloneStep{Index:index, Url:sr.Url}, nil
 }
 
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
 	workDir := WorkDir
-	goblog.Log(pfx, GitCloneStepType + " " + gcs.URL)
+	goblog.Log(pfx, GitCloneStepType + " " + gcs.Url)
 	cmd := exec.Command(
 		"git",
 		"clone",
-		gcs.URL,
+		gcs.Url,
 		".",
 	)
 	return runInDirAndPipe(cmd, workDir, pfx)

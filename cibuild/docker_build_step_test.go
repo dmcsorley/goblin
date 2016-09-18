@@ -1,15 +1,15 @@
+// import github.com/dmcsorley/goblin/cibuild
 package cibuild
 
 import (
+	"github.com/dmcsorley/goblin/config"
 	"testing"
 )
 
 func TestDockerBuildStepRequiresImage(t *testing.T) {
 	_, err := newBuildStep(
 		0,
-		map[string]interface{}{
-			TypeKey: DockerBuildStepType,
-		},
+		&config.StepRecord{Type:DockerBuildStepType},
 	)
 
 	if err == nil {

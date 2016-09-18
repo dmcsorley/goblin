@@ -2,7 +2,9 @@
 package cibuild
 
 import (
+	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
@@ -12,15 +14,11 @@ type DockerBuildStep struct {
 	Image string
 }
 
-func newBuildStep(index int, stepJson map[string]interface{}) (*DockerBuildStep, error) {
-	step := &DockerBuildStep{Index: index}
-	image, err := asString(ImageKey, stepJson[ImageKey])
-	if err != nil {
-		return nil, err
+func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
+	if !sr.HasField(ImageKey) {
+		return nil, errors.New(DockerBuildStepType + " requires " + ImageKey)
 	}
-	step.Image = image
-
-	return step, nil
+	return &DockerBuildStep{Index:index, Image:sr.Image}, nil
 }
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
