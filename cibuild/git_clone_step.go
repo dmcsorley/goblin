@@ -27,6 +27,7 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 		"git",
 		"clone",
 		gcs.URL,
+		".",
 	)
 	return runInDirAndPipe(cmd, workDir, pfx)
 }
