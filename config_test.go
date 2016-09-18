@@ -66,19 +66,3 @@ func TestBuildConfigFailsForUnknownStepType(t *testing.T) {
 		"should have failed when build has unknown step",
 	)
 }
-
-func TestGitCloneStepRequiresURL(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{"name":"aname", "steps":[{"type":"git-clone"}]}]}`,
-		"should have failed when git-clone step has no url",
-	)
-}
-
-func TestDockerBuildStepRequiresImage(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{"name":"aname", "steps":[{"type":"docker-build"}]}]}`,
-		"should have failed when docker-build step has no image",
-	)
-}
