@@ -88,7 +88,7 @@ func serve(cfg *ServerConfig) {
 			if debugFlag {
 				goblog.Log("DEBUG", dumpRequest(r))
 			}
-			build := cibuild.New(now, &localConfig)
+			build := cibuild.New(now, localConfig)
 			goblog.Log(build.Id, "Received build for " + r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go build.DockerRun(image)
@@ -100,7 +100,7 @@ func serve(cfg *ServerConfig) {
 }
 
 func runBuild(cfg *ServerConfig, buildName string, timeStamp string) {
-	bc := cfg.FindBuildByName(buildName)
+	bc := cfg.Builds[buildName]
 	if bc == nil {
 		log.Fatal("No build found with name " + buildName)
 	}

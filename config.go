@@ -18,16 +18,7 @@ type BuildRecord struct {
 }
 
 type ServerConfig struct {
-	Builds []cibuild.BuildConfig
-}
-
-func (sc *ServerConfig) FindBuildByName(name string) *cibuild.BuildConfig {
-	for _, bc := range sc.Builds {
-		if bc.Name == name {
-			return &bc
-		}
-	}
-	return nil
+	Builds map[string]*cibuild.BuildConfig
 }
 
 func loadConfig(filename string) (*ServerConfig, error) {
@@ -51,29 +42,28 @@ func loadConfigBytes(bytes []byte) (*ServerConfig, error) {
 		return nil, errors.New("server config has no builds")
 	}
 
-	sc := &ServerConfig{}
+	sc := &ServerConfig{Builds:map[string]*cibuild.BuildConfig{}}
 	for _, br := range sr.Builds {
 		bc, err := newBuild(br)
 		if err != nil {
 			return nil, err
 		}
-		sc.Builds = append(sc.Builds, bc)
+		sc.Builds[bc.Name] = bc
 	}
 
 	return sc, nil
 }
 
-func newBuild(br BuildRecord) (cibuild.BuildConfig, error) {
-	bc := cibuild.BuildConfig{}
+func newBuild(br BuildRecord) (*cibuild.BuildConfig, error) {
 	if br.Name == "" {
-		return bc, errors.New("build has no name")
+		return nil, errors.New("build has no name")
 	}
 
 	if len(br.Steps) == 0 {
-		return bc, errors.New("build has no steps")
+		return nil, errors.New("build has no steps")
 	}
 
-	bc.Name = br.Name
+	bc := &cibuild.BuildConfig{Name:br.Name}
 	for i, sjson := range br.Steps {
 		step, err := cibuild.NewStep(i, sjson)
 		if err != nil {
