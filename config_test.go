@@ -58,11 +58,3 @@ func TestBuildConfigRequiresStep(t *testing.T) {
 		"should have failed when build has no steps",
 	)
 }
-
-func TestBuildConfigFailsForUnknownStepType(t *testing.T) {
-	expectLoadConfigBytesFailure(
-		t,
-		`{"builds":[{"name":"aname", "steps":[{"type":"not-a-type"}]}]}`,
-		"should have failed when build has unknown step",
-	)
-}
