@@ -13,11 +13,11 @@ import (
 )
 
 type ExitedBuild struct {
-	Id string
+	Id          string
 	ContainerId string
-	Name string
-	Time string
-	Exit string
+	Name        string
+	Time        string
+	Exit        string
 }
 
 func ListenForBuildExits(callback func(*ExitedBuild)) {
@@ -51,11 +51,11 @@ func ListenForBuildExits(callback func(*ExitedBuild)) {
 			log.Printf("%v\n", err)
 		} else {
 			callback(&ExitedBuild{
-				Id: event.Actor.Attributes["goblin.id"],
+				Id:          event.Actor.Attributes["goblin.id"],
 				ContainerId: event.Actor.ID,
-				Name: event.Actor.Attributes["goblin.name"],
-				Time: event.Actor.Attributes["goblin.time"],
-				Exit: event.Actor.Attributes["exitCode"],
+				Name:        event.Actor.Attributes["goblin.name"],
+				Time:        event.Actor.Attributes["goblin.time"],
+				Exit:        event.Actor.Attributes["exitCode"],
 			})
 		}
 	}
@@ -68,7 +68,7 @@ func RemoveContainer(name string) {
 		context.Background(),
 		name,
 		types.ContainerRemoveOptions{
-			Force: true,
+			Force:         true,
 			RemoveVolumes: true,
 		},
 	)

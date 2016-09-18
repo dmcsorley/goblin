@@ -14,9 +14,9 @@ type BuildRecord struct {
 }
 
 type StepRecord struct {
-	Type string  `hcl:",key"`
-	Url string
-	Image string
+	Type          string `hcl:",key"`
+	Url           string
+	Image         string
 	DecodedFields []string `hcl:",decodedFields"`
 }
 

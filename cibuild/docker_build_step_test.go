@@ -9,7 +9,7 @@ import (
 func TestDockerBuildStepRequiresImage(t *testing.T) {
 	_, err := newBuildStep(
 		0,
-		&config.StepRecord{Type:DockerBuildStepType},
+		&config.StepRecord{Type: DockerBuildStepType},
 	)
 
 	if err == nil {

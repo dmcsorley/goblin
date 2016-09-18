@@ -28,8 +28,8 @@ build "bar" {
 			"foo": &BuildRecord{
 				Steps: []*StepRecord{
 					&StepRecord{
-						Type: "git-clone",
-						Url: "foo",
+						Type:          "git-clone",
+						Url:           "foo",
 						DecodedFields: []string{"Url"},
 					},
 				},
@@ -37,8 +37,8 @@ build "bar" {
 			"bar": &BuildRecord{
 				Steps: []*StepRecord{
 					&StepRecord{
-						Type: "docker-build",
-						Image: "example",
+						Type:          "docker-build",
+						Image:         "example",
 						DecodedFields: []string{"Image"},
 					},
 				},
@@ -71,8 +71,8 @@ func TestLoadJSONBytes(t *testing.T) {
 			"foo": &BuildRecord{
 				Steps: []*StepRecord{
 					&StepRecord{
-						Type: "git-clone",
-						Url: "foo",
+						Type:          "git-clone",
+						Url:           "foo",
 						DecodedFields: []string{"Url"},
 					},
 				},
@@ -80,8 +80,8 @@ func TestLoadJSONBytes(t *testing.T) {
 			"bar": &BuildRecord{
 				Steps: []*StepRecord{
 					&StepRecord{
-						Type: "docker-build",
-						Image: "example",
+						Type:          "docker-build",
+						Image:         "example",
 						DecodedFields: []string{"Image"},
 					},
 				},

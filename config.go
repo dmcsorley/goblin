@@ -31,7 +31,7 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		return nil, errors.New("config has no builds")
 	}
 
-	sc := &Goblin{Builds:map[string]*cibuild.BuildConfig{}}
+	sc := &Goblin{Builds: map[string]*cibuild.BuildConfig{}}
 	for name, br := range cr.Builds {
 		bc, err := newBuild(name, br)
 		if err != nil {
@@ -48,7 +48,7 @@ func newBuild(name string, br *config.BuildRecord) (*cibuild.BuildConfig, error)
 		return nil, errors.New("build has no steps")
 	}
 
-	bc := &cibuild.BuildConfig{Name:name}
+	bc := &cibuild.BuildConfig{Name: name}
 	for i, sr := range br.Steps {
 		step, err := cibuild.NewStep(i, sr)
 		if err != nil {

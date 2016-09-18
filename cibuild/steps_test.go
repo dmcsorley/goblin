@@ -9,7 +9,7 @@ import (
 func TestUnknownStepTypeFails(t *testing.T) {
 	_, err := NewStep(
 		0,
-		&config.StepRecord{Type:"unknown"},
+		&config.StepRecord{Type: "unknown"},
 	)
 
 	if err == nil {

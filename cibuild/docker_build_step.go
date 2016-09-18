@@ -18,18 +18,18 @@ func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
 	if !sr.HasField(ImageKey) {
 		return nil, errors.New(DockerBuildStepType + " requires " + ImageKey)
 	}
-	return &DockerBuildStep{Index:index, Image:sr.Image}, nil
+	return &DockerBuildStep{Index: index, Image: sr.Image}, nil
 }
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
 	workDir := WorkDir
-	goblog.Log(pfx, DockerBuildStepType + " " + dbs.Image)
+	goblog.Log(pfx, DockerBuildStepType+" "+dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"build",
-		 "-t",
-		dbs.Image + ":" + pfx,
+		"-t",
+		dbs.Image+":"+pfx,
 		".",
 	)
 	return runInDirAndPipe(cmd, workDir, pfx)
@@ -41,7 +41,7 @@ func (dbs *DockerBuildStep) Cleanup(build *Build) {
 	cmd := exec.Command(
 		"docker",
 		"rmi",
-		dbs.Image + ":" + pfx,
+		dbs.Image+":"+pfx,
 	)
 	if err := cmd.Run(); err != nil {
 		goblog.Log(pfx, fmt.Sprintf("%v", err))

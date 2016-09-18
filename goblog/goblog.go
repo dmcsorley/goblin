@@ -15,4 +15,3 @@ func Log(prefix string, message string) {
 		),
 	)
 }
-

@@ -18,10 +18,10 @@ import (
 const (
 	CONFIG_FILE = "goblin.hcl"
 	LISTEN_ADDR = ":80"
-	ENV_IMAGE = "IMAGE"
-	DEBUG_FLAG = "debug"
-	RUN_FLAG = "run"
-	TIME_FLAG = "time"
+	ENV_IMAGE   = "IMAGE"
+	DEBUG_FLAG  = "debug"
+	RUN_FLAG    = "run"
+	TIME_FLAG   = "time"
 )
 
 func dumpRequest(r *http.Request) string {
@@ -48,7 +48,7 @@ func main() {
 	flag.Parse()
 
 	cfg, err := loadConfig(CONFIG_FILE)
-	if err !=nil {
+	if err != nil {
 		log.Fatal("Error loading server config: " + err.Error())
 	}
 
@@ -62,7 +62,7 @@ func main() {
 func cleanupBuild(eb *gobdocker.ExitedBuild) {
 	goblog.Log(
 		eb.Id,
-		"EXITED " + eb.Exit,
+		"EXITED "+eb.Exit,
 	)
 
 	cibuild.Cleanup(eb)
@@ -83,13 +83,13 @@ func serve(cfg *Goblin) {
 	for _, bc := range cfg.Builds {
 		localConfig := bc
 		log.Println("Build configured on /" + localConfig.Name)
-		posts.HandleFunc("/" + localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
+		posts.HandleFunc("/"+localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 			if debugFlag {
 				goblog.Log("DEBUG", dumpRequest(r))
 			}
 			build := cibuild.New(now, localConfig)
-			goblog.Log(build.Id, "Received build for " + r.URL.Path)
+			goblog.Log(build.Id, "Received build for "+r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go build.DockerRun(image)
 		})

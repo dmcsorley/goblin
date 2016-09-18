@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	GitCloneStepType = "git-clone"
+	GitCloneStepType    = "git-clone"
 	DockerBuildStepType = "docker-build"
-	UrlKey = "url"
-	ImageKey = "image"
+	UrlKey              = "url"
+	ImageKey            = "image"
 )
 
 type Stepper interface {

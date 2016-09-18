@@ -13,21 +13,21 @@ import (
 )
 
 const (
-	TimeFormat = time.RFC3339Nano
-	WorkDir = "/tmp/workdir"
+	TimeFormat           = time.RFC3339Nano
+	WorkDir              = "/tmp/workdir"
 	BuildContainerPrefix = "goblin-build-"
-	VolumePrefix = "goblin-volume-"
+	VolumePrefix         = "goblin-volume-"
 )
 
 type BuildConfig struct {
-	Name string
+	Name  string
 	Steps []Stepper
 }
 
 type Build struct {
-	Id string
+	Id       string
 	received time.Time
-	config *BuildConfig
+	config   *BuildConfig
 }
 
 func buildHash(timestamp string, buildName string) string {
@@ -40,14 +40,14 @@ func buildHash(timestamp string, buildName string) string {
 func New(t time.Time, bc *BuildConfig) *Build {
 	id := buildHash(t.Format(TimeFormat), bc.Name)
 	return &Build{
-		Id: id,
+		Id:       id,
 		received: t,
-		config: bc,
+		config:   bc,
 	}
 }
 
 func (build *Build) Run() {
-	goblog.Log(build.Id, "STARTING " + build.config.Name)
+	goblog.Log(build.Id, "STARTING "+build.config.Name)
 	var err error
 	err = os.Mkdir(build.Id, os.ModeDir)
 	if err != nil {
@@ -80,7 +80,7 @@ func (build *Build) DockerRun(image string) {
 	}
 
 	containerName := BuildContainerPrefix + build.Id
-	goblog.Log(build.Id, "LAUNCHING " + containerName)
+	goblog.Log(build.Id, "LAUNCHING "+containerName)
 
 	ts := build.received.Format(TimeFormat)
 
@@ -88,12 +88,12 @@ func (build *Build) DockerRun(image string) {
 		"docker",
 		"run",
 		"-d",
-		"--label=goblin.build=" + build.config.Name,
-		"--label=goblin.id=" + build.Id,
-		"--label=goblin.time=" + ts,
-		"--name=" + containerName,
+		"--label=goblin.build="+build.config.Name,
+		"--label=goblin.id="+build.Id,
+		"--label=goblin.time="+ts,
+		"--name="+containerName,
 		"-v",
-		volumeName + ":" + WorkDir,
+		volumeName+":"+WorkDir,
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
 		image,

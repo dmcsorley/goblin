@@ -9,7 +9,7 @@ import (
 func TestGitCloneStepRequiresUrl(t *testing.T) {
 	_, err := newCloneStep(
 		0,
-		&config.StepRecord{Type:GitCloneStepType},
+		&config.StepRecord{Type: GitCloneStepType},
 	)
 
 	if err == nil {
