@@ -75,14 +75,14 @@ func serve(cfg *Goblin) {
 	}
 
 	hostname, _ := os.Hostname()
-	log.Println(fmt.Sprintf("Listening on %s%s", hostname, LISTEN_ADDR))
+	goblog.RawLog(fmt.Sprintf("Listening on %s%s", hostname, LISTEN_ADDR))
 
 	r := mux.NewRouter()
 	posts := r.Methods("POST").Subrouter()
 
 	for _, bc := range cfg.Builds {
 		localConfig := bc
-		log.Println("Build configured on /" + localConfig.Name)
+		goblog.RawLog("Build configured on /" + localConfig.Name)
 		posts.HandleFunc("/"+localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 			if debugFlag {

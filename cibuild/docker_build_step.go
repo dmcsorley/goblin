@@ -28,6 +28,7 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 	cmd := exec.Command(
 		"docker",
 		"build",
+		"--force-rm",
 		"-t",
 		dbs.Image+":"+pfx,
 		".",
