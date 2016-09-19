@@ -10,7 +10,7 @@ docker run -d \
  logstash \
  -f /etc/logstash.conf
 
-sleep 2
+sleep 1
 
 LOGSTASH_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' logstash)
 
@@ -23,9 +23,9 @@ docker run -d \
  gliderlabs/logspout \
  syslog://${LOGSTASH_IP}:5000?filter.name=goblin-*
 
-sleep 5
+sleep 1
 
-docker build -t dmcsorley/goblin-example . && \
+docker build -t dmcsorley/goblin-example .
 
 docker run -d \
  --log-opt max-size=10m --log-opt max-file=5 \

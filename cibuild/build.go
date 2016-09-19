@@ -67,9 +67,12 @@ func (build *Build) Run() {
 	goblog.Log(build.Id, "SUCCESS")
 }
 
+func (build *Build) volumeName() string {
+	return VolumePrefix + build.Id
+}
+
 func (build *Build) createVolume() (string, error) {
-	volumeName := VolumePrefix + build.Id
-	return gobdocker.CreateVolume(volumeName)
+	return gobdocker.CreateVolume(build.volumeName())
 }
 
 func (build *Build) DockerRun(image string) {
@@ -97,7 +100,7 @@ func (build *Build) DockerRun(image string) {
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
 		image,
-		"/go/bin/goblin",
+		"goblin",
 		"-run",
 		build.config.Name,
 		"-time",

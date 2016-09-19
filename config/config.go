@@ -17,6 +17,8 @@ type StepRecord struct {
 	Type          string `hcl:",key"`
 	Url           string
 	Image         string
+	Cmd           string
+	Dir           string
 	DecodedFields []string `hcl:",decodedFields"`
 }
 

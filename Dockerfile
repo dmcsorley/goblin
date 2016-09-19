@@ -1,10 +1,12 @@
-FROM golang
+FROM buildpack-deps:xenial-scm
 
 EXPOSE 80
 
-RUN mkdir -p /go/src/github.com/dmcsorley/goblin
+CMD goblin
 
-WORKDIR /go/src/github.com/dmcsorley/goblin
+RUN mkdir -p /usr/local/etc/goblin/
+
+WORKDIR /usr/local/etc/goblin/
 
 RUN cd /tmp && \
   curl -fsL "https://get.docker.com/builds/Linux/x86_64/docker-1.12.1.tgz" -o docker.tgz && \
@@ -13,10 +15,4 @@ RUN cd /tmp && \
   mv docker/docker /usr/local/bin && \
   rm -rf docker docker.tgz
 
-COPY . /go/src/github.com/dmcsorley/goblin
-
-RUN go get -d -v && \
-  go install -v
-
-CMD exec /go/bin/goblin
-
+ADD bin/goblin /usr/local/bin/
