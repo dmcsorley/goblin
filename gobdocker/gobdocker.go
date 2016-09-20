@@ -61,22 +61,6 @@ func ListenForBuildExits(callback func(*ExitedBuild)) {
 	}
 }
 
-func RemoveContainer(name string) {
-	defaultHeaders := map[string]string{"User-Agent": "engine-api-cli-1.0"}
-	cli, _ := client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)
-	err := cli.ContainerRemove(
-		context.Background(),
-		name,
-		types.ContainerRemoveOptions{
-			Force:         true,
-			RemoveVolumes: true,
-		},
-	)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 func CreateVolume(name string) (string, error) {
 	defaultHeaders := map[string]string{"User-Agent": "engine-api-cli-1.0"}
 	cli, _ := client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)

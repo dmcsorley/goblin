@@ -3,6 +3,7 @@ package cibuild
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
@@ -70,8 +71,16 @@ func (drs *DockerRunStep) Step(build *Build) error {
 		return err
 	}
 
-	cmd = exec.Command("docker", "wait", containerName)
-	return runInDirAndPipe(cmd, WorkDir, pfx)
+	i, err := gobdocker.WaitContainer(containerName)
+	if err != nil {
+		return err
+	}
+
+	if i != 0 {
+		return fmt.Errorf("Container exited %v", i)
+	}
+
+	return nil
 }
 
 func (drs *DockerRunStep) Cleanup(build *Build) {
