@@ -37,7 +37,7 @@ func newRunStep(index int, sr *config.StepRecord) (*DockerRunStep, error) {
 
 func (drs *DockerRunStep) Step(build *Build) error {
 	pfx := build.stepPrefix(drs.Index)
-	time.Sleep(5*time.Second)
+	time.Sleep(5 * time.Second)
 
 	workDir := WorkDir
 	if drs.Dir != "" {

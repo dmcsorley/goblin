@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/config"
+	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
@@ -39,12 +40,8 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 func (dbs *DockerBuildStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(dbs.Index)
 	goblog.Log(pfx, "removing intermediate image")
-	cmd := exec.Command(
-		"docker",
-		"rmi",
-		dbs.Image+":"+pfx,
-	)
-	if err := cmd.Run(); err != nil {
+	err := gobdocker.RemoveImage(dbs.Image + ":" + pfx)
+	if err != nil {
 		goblog.Log(pfx, fmt.Sprintf("%v", err))
 	}
 }
