@@ -20,9 +20,13 @@ type ExitedBuild struct {
 	Exit        string
 }
 
-func ListenForBuildExits(callback func(*ExitedBuild)) {
+func getClient() (*client.Client, error) {
 	defaultHeaders := map[string]string{"User-Agent": "engine-api-cli-1.0"}
-	cli, err := client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)
+	return client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)
+}
+
+func ListenForBuildExits(callback func(*ExitedBuild)) {
+	cli, err := getClient()
 	if err != nil {
 		panic(err)
 	}
@@ -80,8 +84,7 @@ func CreateVolume(name string) (string, error) {
 }
 
 func RemoveVolume(name string) {
-	defaultHeaders := map[string]string{"User-Agent": "engine-api-cli-1.0"}
-	cli, _ := client.NewClient(client.DefaultDockerHost, client.DefaultVersion, nil, defaultHeaders)
+	cli, _ := getClient()
 	err := cli.VolumeRemove(context.Background(), name, false)
 	if err != nil {
 		log.Println(err)
