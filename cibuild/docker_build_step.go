@@ -4,6 +4,7 @@ package cibuild
 import (
 	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
@@ -34,7 +35,7 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 		dbs.Image+":"+pfx,
 		".",
 	)
-	return runInDirAndPipe(cmd, workDir, pfx)
+	return command.Run(cmd, workDir, pfx)
 }
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {

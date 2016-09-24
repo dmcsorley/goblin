@@ -3,6 +3,7 @@ package cibuild
 
 import (
 	"errors"
+	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
@@ -30,7 +31,7 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 		gcs.Url,
 		".",
 	)
-	return runInDirAndPipe(cmd, workDir, pfx)
+	return command.Run(cmd, workDir, pfx)
 }
 
 func (gcs *GitCloneStep) Cleanup(build *Build) {

@@ -4,6 +4,7 @@ package cibuild
 import (
 	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"github.com/dmcsorley/goblin/goblog"
@@ -47,7 +48,7 @@ func (drs *DockerRunStep) Step(build *Build) error {
 
 	containerName := BuildContainerPrefix + pfx
 
-	command := []string{
+	args := []string{
 		"run",
 		"-d",
 		"--name",
@@ -60,13 +61,13 @@ func (drs *DockerRunStep) Step(build *Build) error {
 	}
 
 	if drs.Cmd != "" {
-		command = append(command, "bash", "-c", drs.Cmd)
+		args = append(args, "bash", "-c", drs.Cmd)
 	}
 
 	goblog.Log(pfx, DockerRunStepType+" "+drs.Image)
 
-	cmd := exec.Command("docker", command...)
-	err := runInDirAndPipe(cmd, WorkDir, pfx)
+	cmd := exec.Command("docker", args...)
+	err := command.Run(cmd, WorkDir, pfx)
 	if err != nil {
 		return err
 	}
