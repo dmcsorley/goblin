@@ -12,6 +12,7 @@ const (
 	GitCloneStepType    = "git-clone"
 	DockerBuildStepType = "docker-build"
 	DockerRunStepType   = "docker-run"
+	DockerPullStepType  = "docker-pull"
 	UrlKey              = "url"
 	ImageKey            = "image"
 	DirKey              = "dir"
@@ -35,6 +36,8 @@ func NewStep(index int, sr *config.StepRecord) (Stepper, error) {
 		return newBuildStep(index, sr)
 	case DockerRunStepType:
 		return newRunStep(index, sr)
+	case DockerPullStepType:
+		return newPullStep(index, sr)
 	default:
 		return nil, errors.New(fmt.Sprintf("Unknown step %v", sr.Type))
 	}
