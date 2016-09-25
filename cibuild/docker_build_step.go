@@ -25,7 +25,6 @@ func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	workDir := WorkDir
 	goblog.Log(pfx, DockerBuildStepType+" "+dbs.Image)
 	cmd := exec.Command(
 		"docker",
@@ -35,7 +34,8 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 		dbs.Image+":"+pfx,
 		".",
 	)
-	return command.Run(cmd, workDir, pfx)
+	cmd.Dir = WorkDir
+	return command.Run(cmd, pfx)
 }
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {

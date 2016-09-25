@@ -16,8 +16,7 @@ func pipe(prefix string, rc io.ReadCloser) {
 	}
 }
 
-func Run(cmd *exec.Cmd, dir string, prefix string) error {
-	cmd.Dir = dir
+func Run(cmd *exec.Cmd, prefix string) error {
 	cmdout, _ := cmd.StdoutPipe()
 	cmderr, _ := cmd.StderrPipe()
 	go pipe(prefix, cmdout)

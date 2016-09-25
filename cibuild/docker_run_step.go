@@ -67,7 +67,8 @@ func (drs *DockerRunStep) Step(build *Build) error {
 	goblog.Log(pfx, DockerRunStepType+" "+drs.Image)
 
 	cmd := exec.Command("docker", args...)
-	err := command.Run(cmd, WorkDir, pfx)
+	cmd.Dir = WorkDir
+	err := command.Run(cmd, pfx)
 	if err != nil {
 		return err
 	}

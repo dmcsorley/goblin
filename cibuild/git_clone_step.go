@@ -23,7 +23,6 @@ func newCloneStep(index int, sr *config.StepRecord) (*GitCloneStep, error) {
 
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
-	workDir := WorkDir
 	goblog.Log(pfx, GitCloneStepType+" "+gcs.Url)
 	cmd := exec.Command(
 		"git",
@@ -31,7 +30,25 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 		gcs.Url,
 		".",
 	)
-	return command.Run(cmd, workDir, pfx)
+	cmd.Dir = WorkDir
+	err := command.Run(cmd, pfx)
+
+	if err != nil {
+		return err
+	}
+
+	cmd = exec.Command(
+		"git",
+		"log",
+		"-n",
+		"1",
+		"--pretty=oneline",
+		"--no-color",
+		"--decorate",
+		"--abbrev-commit",
+	)
+	cmd.Dir = WorkDir
+	return command.Run(cmd, pfx)
 }
 
 func (gcs *GitCloneStep) Cleanup(build *Build) {
