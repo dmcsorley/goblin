@@ -9,3 +9,7 @@ A small CI system that uses containers to manage builds.
 - Take advantage of docker containers to isolate builds and make them repeatable.
 - Take advantage of docker swarm to scale CI.
 - Refer to CI workers as "my goblin minions".
+
+## Example
+
+See [example/goblin.hcl](example/goblin.hcl) for a sample build file.
