@@ -1,9 +1,9 @@
 package gobdocker
 
 import (
+	"fmt"
 	"github.com/docker/docker/api/types"
 	"golang.org/x/net/context"
-	"log"
 )
 
 func RemoveContainer(name string) {
@@ -17,7 +17,7 @@ func RemoveContainer(name string) {
 		},
 	)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 }
 

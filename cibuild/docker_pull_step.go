@@ -3,9 +3,9 @@ package cibuild
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
-	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
 
@@ -23,7 +23,7 @@ func newPullStep(index int, sr *config.StepRecord) (*DockerPullStep, error) {
 
 func (dbs *DockerPullStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	goblog.Log(pfx, DockerPullStepType+" "+dbs.Image)
+	fmt.Println(pfx, DockerPullStepType, dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"pull",

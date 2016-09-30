@@ -7,7 +7,6 @@ import (
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
-	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
 
@@ -25,7 +24,7 @@ func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	goblog.Log(pfx, DockerBuildStepType+" "+dbs.Image)
+	fmt.Println(pfx, DockerBuildStepType, dbs.Image)
 	cmd := exec.Command(
 		"docker",
 		"build",
@@ -40,9 +39,9 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(dbs.Index)
-	goblog.Log(pfx, "removing intermediate image")
+	fmt.Println(pfx, "removing intermediate image")
 	err := gobdocker.RemoveImage(dbs.Image + ":" + pfx)
 	if err != nil {
-		goblog.Log(pfx, fmt.Sprintf("%v", err))
+		fmt.Println(pfx, err)
 	}
 }

@@ -3,9 +3,9 @@ package cibuild
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
-	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 )
 
@@ -23,7 +23,7 @@ func newCloneStep(index int, sr *config.StepRecord) (*GitCloneStep, error) {
 
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
-	goblog.Log(pfx, GitCloneStepType+" "+gcs.Url)
+	fmt.Println(pfx, GitCloneStepType, gcs.Url)
 	cmd := exec.Command(
 		"git",
 		"clone",

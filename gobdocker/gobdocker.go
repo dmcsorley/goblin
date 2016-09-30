@@ -2,11 +2,11 @@
 package gobdocker
 
 import (
+	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"golang.org/x/net/context"
-	"log"
 )
 
 type ExitedBuild struct {
@@ -40,19 +40,19 @@ func ListenForBuildExits(callback func(*ExitedBuild)) {
 	)
 
 	for {
-	select {
-	case event := <- eventchan:
-		callback(&ExitedBuild{
-			Id:          event.Actor.Attributes["goblin.id"],
-			ContainerId: event.Actor.ID,
-			Name:        event.Actor.Attributes["goblin.name"],
-			Time:        event.Actor.Attributes["goblin.time"],
-			Exit:        event.Actor.Attributes["exitCode"],
-		})
-	case err := <- errchan:
-		log.Printf("%v\n", err)
-		return
-	}
+		select {
+		case event := <-eventchan:
+			callback(&ExitedBuild{
+				Id:          event.Actor.Attributes["goblin.id"],
+				ContainerId: event.Actor.ID,
+				Name:        event.Actor.Attributes["goblin.name"],
+				Time:        event.Actor.Attributes["goblin.time"],
+				Exit:        event.Actor.Attributes["exitCode"],
+			})
+		case err := <-errchan:
+			fmt.Println(err)
+			return
+		}
 	}
 }
 
@@ -78,6 +78,6 @@ func RemoveVolume(name string) {
 	cli, _ := getClient()
 	err := cli.VolumeRemove(context.Background(), name, false)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 	}
 }

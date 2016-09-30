@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/dmcsorley/goblin/cibuild"
 	"github.com/dmcsorley/goblin/gobdocker"
-	"github.com/dmcsorley/goblin/goblog"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -27,7 +26,7 @@ const (
 func dumpRequest(r *http.Request) string {
 	bytes, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		return ""
 	}
 
@@ -60,9 +59,10 @@ func main() {
 }
 
 func cleanupBuild(eb *gobdocker.ExitedBuild) {
-	goblog.Log(
+	fmt.Println(
 		eb.Id,
-		"EXITED "+eb.Exit,
+		"EXITED",
+		eb.Exit,
 	)
 
 	cibuild.Cleanup(eb)
@@ -75,21 +75,21 @@ func serve(cfg *Goblin) {
 	}
 
 	hostname, _ := os.Hostname()
-	goblog.RawLog(fmt.Sprintf("Listening on %s%s", hostname, LISTEN_ADDR))
+	fmt.Printf("Listening on %s%s\n", hostname, LISTEN_ADDR)
 
 	r := mux.NewRouter()
 	posts := r.Methods("POST").Subrouter()
 
 	for _, bc := range cfg.Builds {
 		localConfig := bc
-		goblog.RawLog("Build configured on /" + localConfig.Name)
+		fmt.Printf("Build configured on /%s\n", localConfig.Name)
 		posts.HandleFunc("/"+localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
 			now := time.Now()
 			if debugFlag {
-				goblog.Log("DEBUG", dumpRequest(r))
+				fmt.Println("DEBUG", dumpRequest(r))
 			}
 			build := cibuild.New(now, localConfig)
-			goblog.Log(build.Id, "Received build for "+r.URL.Path)
+			fmt.Println(build.Id, "Received build for", r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go build.DockerRun(image)
 		})

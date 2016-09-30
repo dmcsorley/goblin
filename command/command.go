@@ -3,7 +3,7 @@ package command
 
 import (
 	"bufio"
-	"github.com/dmcsorley/goblin/goblog"
+	"fmt"
 	"io"
 	"os/exec"
 	"sync"
@@ -13,7 +13,7 @@ import (
 func pipe(prefix string, rc io.ReadCloser, wg *sync.WaitGroup) {
 	s := bufio.NewScanner(rc)
 	for s.Scan() {
-		goblog.Log(prefix, s.Text())
+		fmt.Println(prefix, s.Text())
 	}
 	wg.Done()
 }

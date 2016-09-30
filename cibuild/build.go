@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/dmcsorley/goblin/gobdocker"
-	"github.com/dmcsorley/goblin/goblog"
 	"os"
 	"os/exec"
 	"time"
@@ -47,11 +46,11 @@ func New(t time.Time, bc *BuildConfig) *Build {
 }
 
 func (build *Build) Run() {
-	goblog.Log(build.Id, "STARTING "+build.config.Name)
+	fmt.Println(build.Id, "STARTING", build.config.Name)
 	var err error
 	err = os.Mkdir(build.Id, os.ModeDir)
 	if err != nil {
-		goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+		fmt.Println(build.Id, "ERROR", err)
 		os.Exit(1)
 	}
 
@@ -59,12 +58,12 @@ func (build *Build) Run() {
 		defer s.Cleanup(build)
 		err = s.Step(build)
 		if err != nil {
-			goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+			fmt.Println(build.Id, "ERROR", err)
 			os.Exit(1)
 		}
 	}
 
-	goblog.Log(build.Id, "SUCCESS")
+	fmt.Println(build.Id, "SUCCESS")
 }
 
 func (build *Build) volumeName() string {
@@ -78,12 +77,12 @@ func (build *Build) createVolume() (string, error) {
 func (build *Build) DockerRun(image string) {
 	volumeName, err := build.createVolume()
 	if err != nil {
-		goblog.Log(build.Id, fmt.Sprintf("ERROR %v", err))
+		fmt.Println(build.Id, "ERROR", err)
 		return
 	}
 
 	containerName := BuildContainerPrefix + build.Id
-	goblog.Log(build.Id, "LAUNCHING "+containerName)
+	fmt.Println(build.Id, "LAUNCHING", containerName)
 
 	ts := build.received.Format(TimeFormat)
 

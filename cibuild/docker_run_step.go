@@ -7,7 +7,6 @@ import (
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
-	"github.com/dmcsorley/goblin/goblog"
 	"os/exec"
 	"time"
 )
@@ -64,7 +63,7 @@ func (drs *DockerRunStep) Step(build *Build) error {
 		args = append(args, "bash", "-c", drs.Cmd)
 	}
 
-	goblog.Log(pfx, DockerRunStepType+" "+drs.Image)
+	fmt.Println(pfx, DockerRunStepType, drs.Image)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Dir = WorkDir
@@ -87,7 +86,7 @@ func (drs *DockerRunStep) Step(build *Build) error {
 
 func (drs *DockerRunStep) Cleanup(build *Build) {
 	pfx := build.stepPrefix(drs.Index)
-	goblog.Log(pfx, "removing intermediate container")
+	fmt.Println(pfx, "removing intermediate container")
 	containerName := BuildContainerPrefix + pfx
 	gobdocker.RemoveContainer(containerName)
 }
