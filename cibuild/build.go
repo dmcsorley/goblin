@@ -47,16 +47,10 @@ func New(t time.Time, bc *BuildConfig) *Build {
 
 func (build *Build) Run() {
 	fmt.Println(build.Id, "STARTING", build.config.Name)
-	var err error
-	err = os.Mkdir(build.Id, os.ModeDir)
-	if err != nil {
-		fmt.Println(build.Id, "ERROR", err)
-		os.Exit(1)
-	}
 
 	for _, s := range build.config.Steps {
 		defer s.Cleanup(build)
-		err = s.Step(build)
+		err := s.Step(build)
 		if err != nil {
 			fmt.Println(build.Id, "ERROR", err)
 			os.Exit(1)
