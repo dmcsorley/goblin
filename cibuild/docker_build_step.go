@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
-	"github.com/dmcsorley/goblin/gobdocker"
 	"os/exec"
 )
 
@@ -30,7 +29,7 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 		"build",
 		"--force-rm",
 		"-t",
-		dbs.Image+":"+pfx,
+		dbs.Image,
 		".",
 	)
 	cmd.Dir = WorkDir
@@ -38,10 +37,5 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 }
 
 func (dbs *DockerBuildStep) Cleanup(build *Build) {
-	pfx := build.stepPrefix(dbs.Index)
-	fmt.Println(pfx, "removing intermediate image")
-	err := gobdocker.RemoveImage(dbs.Image + ":" + pfx)
-	if err != nil {
-		fmt.Println(pfx, err)
-	}
+	// intentionally left blank
 }
