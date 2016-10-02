@@ -3,6 +3,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/dmcsorley/goblin/cibuild"
 	"github.com/dmcsorley/goblin/config"
 	"io/ioutil"
@@ -29,6 +30,17 @@ func loadConfig(filename string) (*Goblin, error) {
 func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 	if len(cr.Builds) == 0 {
 		return nil, errors.New("config has no builds")
+	}
+
+	values := make(map[string]*config.ValueRecord)
+	for _, v := range cr.Values {
+		if values[v.Name] != nil {
+			return nil, fmt.Errorf("duplicate value '%s'", v.Name)
+		}
+		if !v.HasField("Literal") {
+			return nil, fmt.Errorf("no value for '%s'", v.Name)
+		}
+		values[v.Name] = v
 	}
 
 	sc := &Goblin{Builds: map[string]*cibuild.BuildConfig{}}

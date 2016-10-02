@@ -6,7 +6,14 @@ import (
 )
 
 type Record struct {
+	Values []*ValueRecord          `hcl:"value"`
 	Builds map[string]*BuildRecord `hcl:"build"`
+}
+
+type ValueRecord struct {
+	Name          string `hcl:",key"`
+	Literal       string
+	DecodedFields []string `hcl:",decodedFields"`
 }
 
 type BuildRecord struct {
@@ -22,13 +29,21 @@ type StepRecord struct {
 	DecodedFields []string `hcl:",decodedFields"`
 }
 
-func (sr *StepRecord) HasField(s string) bool {
-	for _, f := range sr.DecodedFields {
+func hasField(fields []string, s string) bool {
+	for _, f := range fields {
 		if strings.EqualFold(s, f) {
 			return true
 		}
 	}
 	return false
+}
+
+func (vr *ValueRecord) HasField(s string) bool {
+	return hasField(vr.DecodedFields, s)
+}
+
+func (sr *StepRecord) HasField(s string) bool {
+	return hasField(sr.DecodedFields, s)
 }
 
 func LoadBytes(b []byte) (*Record, error) {

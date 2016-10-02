@@ -93,3 +93,53 @@ func TestLoadJSONBytes(t *testing.T) {
 		t.Error("Not equal")
 	}
 }
+
+func TestLoadValues(t *testing.T) {
+	cs := `
+value "avalue" {
+  literal = "example"
+}
+value "bvalue" {
+  literal = "example2"
+}
+build "foo" {
+  step git-clone {
+    url = "${avalue}"
+  }
+}`
+
+	c, err := LoadBytes([]byte(cs))
+	if err != nil {
+		t.Error(err)
+	}
+
+	expected := &Record{
+		Values: []*ValueRecord{
+			&ValueRecord{
+				Name:          "avalue",
+				Literal:       "example",
+				DecodedFields: []string{"Literal"},
+			},
+			&ValueRecord{
+				Name:          "bvalue",
+				Literal:       "example2",
+				DecodedFields: []string{"Literal"},
+			},
+		},
+		Builds: map[string]*BuildRecord{
+			"foo": &BuildRecord{
+				Steps: []*StepRecord{
+					&StepRecord{
+						Type:          "git-clone",
+						Url:           "${avalue}",
+						DecodedFields: []string{"Url"},
+					},
+				},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(c, expected) {
+		t.Error("Not equal")
+	}
+}
