@@ -143,3 +143,62 @@ build "foo" {
 		t.Error("Not equal")
 	}
 }
+
+func TestValueValidationAndReplacement(t *testing.T) {
+	ve := NewValueEngine()
+	ve.Add("qwerty", "avalue")
+
+	testcases := []struct {
+		input  string
+		valid  bool
+		output string
+	}{
+		{"", true, ""},
+		{"$", false, "BAD"},
+		{"ax$", false, "BAD"},
+		{"$bx", false, "BAD"},
+		{"cx$dx", false, "BAD"},
+		{"$$", true, "$"},
+		{"$$ex", true, "$ex"},
+		{"fx$$", true, "fx$"},
+		{"gx$$hx", true, "gx$hx"},
+		{"{", true, "{"},
+		{"ix{", true, "ix{"},
+		{"{jx", true, "{jx"},
+		{"lx{mx", true, "lx{mx"},
+		{"nx${", false, "BAD"},
+		{"ox${px", false, "BAD"},
+		{"${qx", false, "BAD"},
+		{"}", true, "}"},
+		{"rx}", true, "rx}"},
+		{"}sx", true, "}sx"},
+		{"tx}ux", true, "tx}ux"},
+		{"${foo}", false, "BAD"},
+		{"${qwerty}", true, "avalue"},
+		{"$${qwerty}", true, "${qwerty}"},
+		{"zxcv-${qwerty}-lkjhg", true, "zxcv-avalue-lkjhg"},
+	}
+
+	for _, tc := range testcases {
+		err := ve.Validate(tc.input)
+		if tc.valid {
+			if err != nil {
+				t.Errorf("'%s' should have passed but got: %v", tc.input, err)
+			} else {
+				output, err := ve.Replace(tc.input)
+				if err != nil {
+					t.Error(err)
+				} else if output != tc.output {
+					t.Errorf(
+						"'%s' should have produced '%s' but got '%s'",
+						tc.input,
+						tc.output,
+						output,
+					)
+				}
+			}
+		} else if err == nil {
+			t.Errorf("'%s' should have failed", tc.input)
+		}
+	}
+}

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"bufio"
+	"errors"
 	"github.com/hashicorp/hcl"
 	"strings"
 )
@@ -53,4 +55,158 @@ func LoadBytes(b []byte) (*Record, error) {
 		return nil, err
 	}
 	return r, nil
+}
+
+func tokenize(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	if len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	switch data[0] {
+	case '$':
+		return 1, []byte("$"), nil
+	case '{':
+		return 1, []byte("{"), nil
+	case '}':
+		return 1, []byte("}"), nil
+	default:
+		token = nil
+	INNER:
+		for _, b := range data {
+			switch b {
+			case '$', '{', '}':
+				break INNER
+			default:
+				token = append(token, b)
+			}
+		}
+
+		if len(token) < len(data) || atEOF {
+			return len(token), token, nil
+		} else {
+			return 0, nil, nil
+		}
+	}
+}
+
+type ValueEngine struct {
+	values map[string]string
+}
+
+func NewValueEngine() *ValueEngine {
+	return &ValueEngine{values: map[string]string{}}
+}
+
+func (ve *ValueEngine) Add(name string, value string) {
+	ve.values[name] = value
+}
+
+type parseState int
+
+const (
+	initial parseState = iota
+	haveDollar
+	haveLeftCurly
+	haveValueName
+)
+
+func (ve *ValueEngine) Validate(astring string) error {
+	s := bufio.NewScanner(strings.NewReader(astring))
+	s.Split(tokenize)
+
+	var valueName string
+	state := initial
+
+	for s.Scan() {
+		t := s.Text()
+		switch state {
+		case initial:
+			if t == "$" {
+				state = haveDollar
+			}
+		case haveDollar:
+			switch t {
+			case "$":
+				state = initial
+			case "{":
+				state = haveLeftCurly
+			default:
+				return errors.New("Unexpected '" + t + "' after $")
+			}
+		case haveLeftCurly:
+			switch t {
+			case "$", "{", "}":
+				return errors.New("Unexpected '" + t + "' after {")
+			default:
+				state = haveValueName
+				valueName = t
+			}
+		case haveValueName:
+			switch t {
+			case "}":
+				if ve.values[valueName] == "" {
+					return errors.New("Unexpected value '" + valueName + "'")
+				}
+				state = initial
+			default:
+				return errors.New("Unexpected '" + t + "' after '" + valueName + "'")
+			}
+		}
+	}
+
+	if state != initial {
+		return errors.New("Unexpected end of stuff '" + astring + "'")
+	}
+
+	return nil
+}
+
+func (ve *ValueEngine) Replace(astring string) (string, error) {
+	s := bufio.NewScanner(strings.NewReader(astring))
+	s.Split(tokenize)
+
+	var valueName string
+	var result []byte
+	state := initial
+
+	for s.Scan() {
+		t := s.Text()
+		switch state {
+		case initial:
+			switch t {
+			case "$":
+				state = haveDollar
+			default:
+				result = append(result, []byte(t)...)
+			}
+		case haveDollar:
+			switch t {
+			case "$":
+				result = append(result, '$')
+				state = initial
+			case "{":
+				state = haveLeftCurly
+			default:
+				return "", errors.New("Unexpected token '" + t + "'")
+			}
+		case haveLeftCurly:
+			switch t {
+			case "}":
+				return "", errors.New("Unexpected token '" + t + "'")
+			default:
+				valueName = t
+				state = haveValueName
+			}
+		case haveValueName:
+			switch t {
+			case "}":
+				result = append(result, []byte(ve.values[valueName])...)
+				state = initial
+			default:
+				return "", errors.New("Unexpected token '" + t + "'")
+			}
+		}
+	}
+
+	return string(result), nil
 }
