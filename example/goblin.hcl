@@ -1,3 +1,15 @@
+value "DOCKER_HUB_NAME" {
+  literal = "dmcsorley"
+}
+
+value "DOCKER_HUB_EMAIL" {
+  env = "GOBLIN_DOCKER_HUB_EMAIL"
+}
+
+value "DOCKER_HUB_PASSWORD" {
+  env = "GOBLIN_DOCKER_HUB_PASSWORD"
+}
+
 /*
  Builds occur in an isolated container, launched by the parent goblin process.
  The build containers have a docker volume mounted at /tmp/workdir by default.

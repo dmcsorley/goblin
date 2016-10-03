@@ -43,8 +43,8 @@ runexample:
 	docker run -d $(LOGOPT) $(SOCKV) -e IMAGE=$(EXAMPLEIMAGE) --name goblin-example -p 8080:80 $(EXAMPLEIMAGE)
 
 runall:
-	make runlogstash
+	$(MAKE) runlogstash
 	sleep 5
-	make runlogspout
+	$(MAKE) runlogspout
 	sleep 5
-	make runexample
+	$(MAKE) runexample

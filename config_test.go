@@ -76,3 +76,22 @@ func TestServerConfigRejectsUnspecifiedValues(t *testing.T) {
 		t.Error("should have failed for unspecified value")
 	}
 }
+
+func TestStepConfigFailsOnUndefinedValueExpression(t *testing.T) {
+	_, err := configRecordAsGoblin(&config.Record{
+		Builds: map[string]*config.BuildRecord{
+			"build1": &config.BuildRecord{
+				Steps: []*config.StepRecord{
+					&config.StepRecord{
+						Type:          "git-clone",
+						Url:           "${example}",
+						DecodedFields: []string{"Url"},
+					},
+				},
+			},
+		},
+	})
+	if err == nil {
+		t.Error("should have failed for undefined value expression")
+	}
+}

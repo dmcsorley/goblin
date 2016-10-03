@@ -5,31 +5,31 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
+	"github.com/dmcsorley/goblin/config"
 	"os/exec"
 )
 
 type DockerBuildStep struct {
-	Index      int
-	stepConfig StepConfig
+	index int
+	image string
 }
 
-func newBuildStep(index int, sc StepConfig) (*DockerBuildStep, error) {
-	if !sc.HasImage() {
+func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
+	if !sr.HasParameter(ImageKey) {
 		return nil, errors.New(DockerBuildStepType + " requires " + ImageKey)
 	}
-	return &DockerBuildStep{Index: index, stepConfig: sc}, nil
+	return &DockerBuildStep{index: index, image: sr.Image}, nil
 }
 
 func (dbs *DockerBuildStep) Step(build *Build) error {
-	pfx := build.stepPrefix(dbs.Index)
-	image := dbs.stepConfig.ImageParam()
-	fmt.Println(pfx, DockerBuildStepType, image)
+	pfx := build.stepPrefix(dbs.index)
+	fmt.Println(pfx, DockerBuildStepType, dbs.image)
 	cmd := exec.Command(
 		"docker",
 		"build",
 		"--force-rm",
 		"-t",
-		image,
+		dbs.image,
 		".",
 	)
 	cmd.Dir = WorkDir

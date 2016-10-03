@@ -32,20 +32,20 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		return nil, errors.New("config has no builds")
 	}
 
-	values := make(map[string]*config.ValueRecord)
+	values := config.NewValueEngine()
 	for _, v := range cr.Values {
-		if values[v.Name] != nil {
+		if values.HasValue(v.Name) {
 			return nil, fmt.Errorf("duplicate value '%s'", v.Name)
 		}
 		if !v.HasField("Literal") {
 			return nil, fmt.Errorf("no value for '%s'", v.Name)
 		}
-		values[v.Name] = v
+		values.AddValue(v)
 	}
 
 	sc := &Goblin{Builds: map[string]*cibuild.BuildConfig{}}
 	for name, br := range cr.Builds {
-		bc, err := newBuild(name, br)
+		bc, err := newBuild(name, br, values)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 	return sc, nil
 }
 
-func newBuild(name string, br *config.BuildRecord) (*cibuild.BuildConfig, error) {
+func newBuild(name string, br *config.BuildRecord, ve *config.ValueEngine) (*cibuild.BuildConfig, error) {
 	if len(br.Steps) == 0 {
 		return nil, errors.New("build has no steps")
 	}

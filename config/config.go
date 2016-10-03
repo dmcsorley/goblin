@@ -44,55 +44,12 @@ func (vr *ValueRecord) HasField(s string) bool {
 	return hasField(vr.DecodedFields, s)
 }
 
-func (sr *StepRecord) StepType() string {
-	return sr.Type
+func (vr *ValueRecord) value() string {
+	return vr.Literal
 }
 
-func (sr *StepRecord) HasUrl() bool {
-	return hasField(sr.DecodedFields, "url")
-}
-
-func (sr *StepRecord) UrlParam() string {
-	return sr.Url
-}
-
-func (sr *StepRecord) HasImage() bool {
-	return hasField(sr.DecodedFields, "image")
-}
-
-func (sr *StepRecord) ImageParam() string {
-	return sr.Image
-}
-
-func (sr *StepRecord) HasDir() bool {
-	return hasField(sr.DecodedFields, "dir")
-}
-
-func (sr *StepRecord) DirParam() string {
-	return sr.Dir
-}
-
-func (sr *StepRecord) HasCmd() bool {
-	return hasField(sr.DecodedFields, "cmd")
-}
-
-func (sr *StepRecord) CmdParam() string {
-	return sr.Cmd
-}
-
-func (sr *StepRecord) Parameter(name string) string {
-	switch strings.ToLower(name) {
-	case "url":
-		return sr.Url
-	case "image":
-		return sr.Image
-	case "cmd":
-		return sr.Cmd
-	case "dir":
-		return sr.Dir
-	default:
-		return ""
-	}
+func (sr *StepRecord) HasParameter(s string) bool {
+	return hasField(sr.DecodedFields, s)
 }
 
 func LoadBytes(b []byte) (*Record, error) {
@@ -137,15 +94,19 @@ func tokenize(data []byte, atEOF bool) (advance int, token []byte, err error) {
 }
 
 type ValueEngine struct {
-	values map[string]string
+	values map[string]*ValueRecord
 }
 
 func NewValueEngine() *ValueEngine {
-	return &ValueEngine{values: map[string]string{}}
+	return &ValueEngine{values: map[string]*ValueRecord{}}
 }
 
-func (ve *ValueEngine) Add(name string, value string) {
-	ve.values[name] = value
+func (ve *ValueEngine) AddValue(value *ValueRecord) {
+	ve.values[value.Name] = value
+}
+
+func (ve *ValueEngine) HasValue(name string) bool {
+	return ve.values[name] != nil
 }
 
 type parseState int
@@ -191,8 +152,8 @@ func (ve *ValueEngine) Validate(astring string) error {
 		case haveValueName:
 			switch t {
 			case "}":
-				if ve.values[valueName] == "" {
-					return errors.New("Unexpected value '" + valueName + "'")
+				if !ve.HasValue(valueName) {
+					return errors.New("Undefined value '" + valueName + "'")
 				}
 				state = initial
 			default:
@@ -247,7 +208,7 @@ func (ve *ValueEngine) Replace(astring string) (string, error) {
 		case haveValueName:
 			switch t {
 			case "}":
-				result = append(result, []byte(ve.values[valueName])...)
+				result = append(result, []byte(ve.values[valueName].value())...)
 				state = initial
 			default:
 				return "", errors.New("Unexpected token '" + t + "'")

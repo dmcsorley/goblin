@@ -5,35 +5,47 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
+	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"os/exec"
 	"time"
 )
 
 type DockerRunStep struct {
-	Index      int
-	stepConfig StepConfig
+	index int
+	image string
+	cmd   string
+	dir   string
 }
 
-func newRunStep(index int, sc StepConfig) (*DockerRunStep, error) {
-	if !sc.HasImage() {
+func newRunStep(index int, sr *config.StepRecord) (*DockerRunStep, error) {
+	if !sr.HasParameter(ImageKey) {
 		return nil, errors.New(DockerRunStepType + " requires " + ImageKey)
 	}
 
-	return &DockerRunStep{Index: index, stepConfig: sc}, nil
+	drs := &DockerRunStep{index: index, image: sr.Image}
+
+	if sr.HasParameter(CmdKey) {
+		drs.cmd = sr.Cmd
+	}
+
+	if sr.HasParameter(DirKey) {
+		drs.dir = sr.Dir
+	}
+
+	return drs, nil
 }
 
 func (drs *DockerRunStep) Step(build *Build) error {
-	pfx := build.stepPrefix(drs.Index)
+	pfx := build.stepPrefix(drs.index)
 	time.Sleep(5 * time.Second)
 
 	workDir := WorkDir
-	if drs.stepConfig.HasDir() {
-		workDir = drs.stepConfig.DirParam()
+	if drs.dir != "" {
+		workDir = drs.dir
 	}
 
 	containerName := BuildContainerPrefix + pfx
-	image := drs.stepConfig.ImageParam()
 
 	args := []string{
 		"run",
@@ -44,17 +56,16 @@ func (drs *DockerRunStep) Step(build *Build) error {
 		build.volumeName() + ":" + workDir,
 		"-w",
 		workDir,
-		image,
+		drs.image,
 	}
 
-	if drs.stepConfig.HasCmd() {
-		args = append(args, "bash", "-c", drs.stepConfig.CmdParam())
+	if drs.cmd != "" {
+		args = append(args, "bash", "-c", drs.cmd)
 	}
 
-	fmt.Println(pfx, DockerRunStepType, image)
+	fmt.Println(pfx, DockerRunStepType, drs.image)
 
 	cmd := exec.Command("docker", args...)
-	cmd.Dir = WorkDir
 	err := command.Run(cmd, pfx)
 	if err != nil {
 		return err
@@ -73,7 +84,7 @@ func (drs *DockerRunStep) Step(build *Build) error {
 }
 
 func (drs *DockerRunStep) Cleanup(build *Build) {
-	pfx := build.stepPrefix(drs.Index)
+	pfx := build.stepPrefix(drs.index)
 	fmt.Println(pfx, "removing intermediate container")
 	containerName := BuildContainerPrefix + pfx
 	gobdocker.RemoveContainer(containerName)

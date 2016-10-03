@@ -146,7 +146,11 @@ build "foo" {
 
 func TestValueValidationAndReplacement(t *testing.T) {
 	ve := NewValueEngine()
-	ve.Add("qwerty", "avalue")
+	ve.AddValue(&ValueRecord{
+		Name:          "qwerty",
+		Literal:       "avalue",
+		DecodedFields: []string{"Literal"},
+	})
 
 	testcases := []struct {
 		input  string

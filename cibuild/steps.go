@@ -4,6 +4,7 @@ package cibuild
 import (
 	"errors"
 	"fmt"
+	"github.com/dmcsorley/goblin/config"
 	"strconv"
 )
 
@@ -18,18 +19,6 @@ const (
 	CmdKey              = "cmd"
 )
 
-type StepConfig interface {
-	StepType() string
-	HasUrl() bool
-	UrlParam() string
-	HasImage() bool
-	ImageParam() string
-	HasDir() bool
-	DirParam() string
-	HasCmd() bool
-	CmdParam() string
-}
-
 type Stepper interface {
 	Step(build *Build) error
 	Cleanup(build *Build)
@@ -39,17 +28,17 @@ func (build *Build) stepPrefix(index int) string {
 	return build.Id[0:20] + "-" + strconv.Itoa(index)
 }
 
-func NewStep(index int, sc StepConfig) (Stepper, error) {
-	switch sc.StepType() {
+func NewStep(index int, sr *config.StepRecord) (Stepper, error) {
+	switch sr.Type {
 	case GitCloneStepType:
-		return newCloneStep(index, sc)
+		return newCloneStep(index, sr)
 	case DockerBuildStepType:
-		return newBuildStep(index, sc)
+		return newBuildStep(index, sr)
 	case DockerRunStepType:
-		return newRunStep(index, sc)
+		return newRunStep(index, sr)
 	case DockerPullStepType:
-		return newPullStep(index, sc)
+		return newPullStep(index, sr)
 	default:
-		return nil, errors.New(fmt.Sprintf("Unknown step %v", sc.StepType()))
+		return nil, errors.New(fmt.Sprintf("Unknown step %v", sr.Type))
 	}
 }
