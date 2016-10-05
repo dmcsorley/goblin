@@ -5,35 +5,22 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
-	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"os/exec"
 	"time"
 )
 
 type DockerRunStep struct {
-	Index int
-	Image string
-	Dir   string
-	Cmd   string
+	Index      int
+	stepConfig StepConfig
 }
 
-func newRunStep(index int, sr *config.StepRecord) (*DockerRunStep, error) {
-	if !sr.HasField(ImageKey) {
+func newRunStep(index int, sc StepConfig) (*DockerRunStep, error) {
+	if !sc.HasImage() {
 		return nil, errors.New(DockerRunStepType + " requires " + ImageKey)
 	}
 
-	drs := &DockerRunStep{Index: index, Image: sr.Image}
-
-	if sr.HasField(DirKey) {
-		drs.Dir = sr.Dir
-	}
-
-	if sr.HasField(CmdKey) {
-		drs.Cmd = sr.Cmd
-	}
-
-	return drs, nil
+	return &DockerRunStep{Index: index, stepConfig: sc}, nil
 }
 
 func (drs *DockerRunStep) Step(build *Build) error {
@@ -41,11 +28,12 @@ func (drs *DockerRunStep) Step(build *Build) error {
 	time.Sleep(5 * time.Second)
 
 	workDir := WorkDir
-	if drs.Dir != "" {
-		workDir = drs.Dir
+	if drs.stepConfig.HasDir() {
+		workDir = drs.stepConfig.DirParam()
 	}
 
 	containerName := BuildContainerPrefix + pfx
+	image := drs.stepConfig.ImageParam()
 
 	args := []string{
 		"run",
@@ -56,14 +44,14 @@ func (drs *DockerRunStep) Step(build *Build) error {
 		build.volumeName() + ":" + workDir,
 		"-w",
 		workDir,
-		drs.Image,
+		image,
 	}
 
-	if drs.Cmd != "" {
-		args = append(args, "bash", "-c", drs.Cmd)
+	if drs.stepConfig.HasCmd() {
+		args = append(args, "bash", "-c", drs.stepConfig.CmdParam())
 	}
 
-	fmt.Println(pfx, DockerRunStepType, drs.Image)
+	fmt.Println(pfx, DockerRunStepType, image)
 
 	cmd := exec.Command("docker", args...)
 	cmd.Dir = WorkDir

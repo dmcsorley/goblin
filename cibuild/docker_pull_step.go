@@ -5,29 +5,29 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
-	"github.com/dmcsorley/goblin/config"
 	"os/exec"
 )
 
 type DockerPullStep struct {
-	Index int
-	Image string
+	Index      int
+	stepConfig StepConfig
 }
 
-func newPullStep(index int, sr *config.StepRecord) (*DockerPullStep, error) {
-	if !sr.HasField(ImageKey) {
+func newPullStep(index int, sc StepConfig) (*DockerPullStep, error) {
+	if !sc.HasImage() {
 		return nil, errors.New(DockerPullStepType + " requires " + ImageKey)
 	}
-	return &DockerPullStep{Index: index, Image: sr.Image}, nil
+	return &DockerPullStep{Index: index, stepConfig: sc}, nil
 }
 
 func (dbs *DockerPullStep) Step(build *Build) error {
 	pfx := build.stepPrefix(dbs.Index)
-	fmt.Println(pfx, DockerPullStepType, dbs.Image)
+	image := dbs.stepConfig.ImageParam()
+	fmt.Println(pfx, DockerPullStepType, image)
 	cmd := exec.Command(
 		"docker",
 		"pull",
-		dbs.Image,
+		image,
 	)
 	return command.Run(cmd, pfx)
 }

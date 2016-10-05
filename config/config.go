@@ -44,8 +44,55 @@ func (vr *ValueRecord) HasField(s string) bool {
 	return hasField(vr.DecodedFields, s)
 }
 
-func (sr *StepRecord) HasField(s string) bool {
-	return hasField(sr.DecodedFields, s)
+func (sr *StepRecord) StepType() string {
+	return sr.Type
+}
+
+func (sr *StepRecord) HasUrl() bool {
+	return hasField(sr.DecodedFields, "url")
+}
+
+func (sr *StepRecord) UrlParam() string {
+	return sr.Url
+}
+
+func (sr *StepRecord) HasImage() bool {
+	return hasField(sr.DecodedFields, "image")
+}
+
+func (sr *StepRecord) ImageParam() string {
+	return sr.Image
+}
+
+func (sr *StepRecord) HasDir() bool {
+	return hasField(sr.DecodedFields, "dir")
+}
+
+func (sr *StepRecord) DirParam() string {
+	return sr.Dir
+}
+
+func (sr *StepRecord) HasCmd() bool {
+	return hasField(sr.DecodedFields, "cmd")
+}
+
+func (sr *StepRecord) CmdParam() string {
+	return sr.Cmd
+}
+
+func (sr *StepRecord) Parameter(name string) string {
+	switch strings.ToLower(name) {
+	case "url":
+		return sr.Url
+	case "image":
+		return sr.Image
+	case "cmd":
+		return sr.Cmd
+	case "dir":
+		return sr.Dir
+	default:
+		return ""
+	}
 }
 
 func LoadBytes(b []byte) (*Record, error) {

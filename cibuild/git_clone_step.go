@@ -5,29 +5,29 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
-	"github.com/dmcsorley/goblin/config"
 	"os/exec"
 )
 
 type GitCloneStep struct {
-	Index int
-	Url   string
+	Index      int
+	stepConfig StepConfig
 }
 
-func newCloneStep(index int, sr *config.StepRecord) (*GitCloneStep, error) {
-	if !sr.HasField(UrlKey) {
+func newCloneStep(index int, sc StepConfig) (*GitCloneStep, error) {
+	if !sc.HasUrl() {
 		return nil, errors.New(GitCloneStepType + " requires " + UrlKey)
 	}
-	return &GitCloneStep{Index: index, Url: sr.Url}, nil
+	return &GitCloneStep{Index: index, stepConfig: sc}, nil
 }
 
 func (gcs *GitCloneStep) Step(build *Build) error {
 	pfx := build.stepPrefix(gcs.Index)
-	fmt.Println(pfx, GitCloneStepType, gcs.Url)
+	url := gcs.stepConfig.UrlParam()
+	fmt.Println(pfx, GitCloneStepType, url)
 	cmd := exec.Command(
 		"git",
 		"clone",
-		gcs.Url,
+		url,
 		".",
 	)
 	cmd.Dir = WorkDir
