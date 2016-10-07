@@ -1,12 +1,16 @@
-DIR=/go/src/github.com/dmcsorley/goblin
+PACKAGE=github.com/dmcsorley/goblin
+DIR=/go/src/$(PACKAGE)
 LOGOPT=--log-opt max-size=10m --log-opt max-file=5
 SOCKV=-v /var/run/docker.sock:/var/run/docker.sock
 LOGSPOUTIGNORE=-e LOGSPOUT=ignore
 EXAMPLEIMAGE=dmcsorley/goblin-example
 
-.PHONY: build fmt inc deps goblin example runlogstash runlogspout runexample runall
+.PHONY: build test fmt inc deps goblin example runlogstash runlogspout runexample runall
 
 build: deps goblin
+
+test:
+	go test -v $(PACKAGE) $(PACKAGE)/cibuild $(PACKAGE)/config
 
 fmt:
 	find . -name "*.go" | xargs dirname | sort | uniq | xargs go fmt
