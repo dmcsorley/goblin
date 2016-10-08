@@ -118,7 +118,7 @@ const (
 	haveValueName
 )
 
-func (ve *ValueEngine) Validate(astring string) error {
+func (ve *ValueEngine) ValidateValue(astring string) error {
 	s := bufio.NewScanner(strings.NewReader(astring))
 	s.Split(tokenize)
 

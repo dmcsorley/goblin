@@ -1,7 +1,14 @@
+/*
+ Config values for the build service are declared at the top level.
+ Values can be literal:
+ */
 value "DOCKER_HUB_NAME" {
   literal = "dmcsorley"
 }
 
+/*
+ Values can also be set from environment variables.
+ */
 value "DOCKER_HUB_EMAIL" {
   env = "GOBLIN_DOCKER_HUB_EMAIL"
 }
@@ -54,7 +61,7 @@ build "goblin" {
 
   # docker build in the working directory using the default Dockerfile
   step docker-build {
-    image = "dmcsorley/goblin"
+    image = "${DOCKER_HUB_NAME}/goblin"
   }
 
   # At the end of the build, everything is unwound; images, containers, and volumes are removed
@@ -69,6 +76,6 @@ build captainhook {
     image = "golang:1.4.2-onbuild"
   }
   step docker-build {
-    image = "dmcsorley/captainhook"
+    image = "${DOCKER_HUB_NAME}/captainhook"
   }
 }

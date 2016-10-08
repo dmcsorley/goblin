@@ -60,12 +60,12 @@ func (build *Build) Run() {
 	fmt.Println(build.Id, "SUCCESS")
 }
 
-func (build *Build) volumeName() string {
+func (build *Build) VolumeName() string {
 	return VolumePrefix + build.Id
 }
 
 func (build *Build) createVolume() (string, error) {
-	return gobdocker.CreateVolume(build.volumeName())
+	return gobdocker.CreateVolume(build.VolumeName())
 }
 
 func (build *Build) DockerRun(image string) {

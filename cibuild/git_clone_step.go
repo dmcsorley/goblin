@@ -2,7 +2,6 @@
 package cibuild
 
 import (
-	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
@@ -14,16 +13,22 @@ type GitCloneStep struct {
 	url   string
 }
 
-func newCloneStep(index int, sr *config.StepRecord) (*GitCloneStep, error) {
+func newCloneStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, error) {
 	if !sr.HasParameter(UrlKey) {
-		return nil, errors.New(GitCloneStepType + " requires " + UrlKey)
+		return stepParamRequired(GitClone, UrlKey)
 	}
+
+	err := vv.ValidateValue(sr.Url)
+	if err != nil {
+		return stepParamError(GitClone, UrlKey, err)
+	}
+
 	return &GitCloneStep{index: index, url: sr.Url}, nil
 }
 
-func (gcs *GitCloneStep) Step(build *Build) error {
-	pfx := build.stepPrefix(gcs.index)
-	fmt.Println(pfx, GitCloneStepType, gcs.url)
+func (gcs *GitCloneStep) Step(se StepEnvironment) error {
+	pfx := se.StepPrefix(gcs.index)
+	fmt.Println(pfx, GitClone, gcs.url)
 	cmd := exec.Command(
 		"git",
 		"clone",
@@ -51,6 +56,6 @@ func (gcs *GitCloneStep) Step(build *Build) error {
 	return command.Run(cmd, pfx)
 }
 
-func (gcs *GitCloneStep) Cleanup(build *Build) {
+func (gcs *GitCloneStep) Cleanup(se StepEnvironment) {
 	// intentionally left blank, will be cleaned up with the volume
 }

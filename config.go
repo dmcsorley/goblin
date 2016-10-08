@@ -10,7 +10,7 @@ import (
 )
 
 type Goblin struct {
-	Builds map[string]*cibuild.BuildConfig
+	builds map[string]*cibuild.BuildConfig
 }
 
 func loadConfig(filename string) (*Goblin, error) {
@@ -43,13 +43,13 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		values.AddValue(v)
 	}
 
-	sc := &Goblin{Builds: map[string]*cibuild.BuildConfig{}}
+	sc := &Goblin{builds: map[string]*cibuild.BuildConfig{}}
 	for name, br := range cr.Builds {
 		bc, err := newBuild(name, br, values)
 		if err != nil {
 			return nil, err
 		}
-		sc.Builds[name] = bc
+		sc.builds[name] = bc
 	}
 
 	return sc, nil
@@ -62,7 +62,7 @@ func newBuild(name string, br *config.BuildRecord, ve *config.ValueEngine) (*cib
 
 	bc := &cibuild.BuildConfig{Name: name}
 	for i, sr := range br.Steps {
-		step, err := cibuild.NewStep(i, sr)
+		step, err := cibuild.NewStep(i, sr, ve)
 		if err != nil {
 			return nil, err
 		}

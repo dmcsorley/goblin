@@ -7,12 +7,23 @@ import (
 )
 
 func TestDockerBuildStepRequiresImage(t *testing.T) {
-	_, err := newBuildStep(
-		0,
-		&config.StepRecord{Type: DockerBuildStepType},
+	expectStepConstructorFailure(
+		newBuildStep,
+		&config.StepRecord{Type: string(DockerBuild)},
+		t,
+		"docker-build step should have failed with no image",
 	)
+}
 
-	if err == nil {
-		t.Error("docker-build step should have failed with no image")
-	}
+func TestDockerBuildStepFailsForBadImage(t *testing.T) {
+	expectStepConstructorFailure(
+		newBuildStep,
+		&config.StepRecord{
+			Type:          string(DockerBuild),
+			Image:         "${badexample}",
+			DecodedFields: []string{"image"},
+		},
+		t,
+		"docker-build step should have failed with no image",
+	)
 }

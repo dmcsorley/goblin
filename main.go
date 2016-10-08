@@ -80,7 +80,7 @@ func serve(cfg *Goblin) {
 	r := mux.NewRouter()
 	posts := r.Methods("POST").Subrouter()
 
-	for _, bc := range cfg.Builds {
+	for _, bc := range cfg.builds {
 		localConfig := bc
 		fmt.Printf("Build configured on /%s\n", localConfig.Name)
 		posts.HandleFunc("/"+localConfig.Name, func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func serve(cfg *Goblin) {
 }
 
 func runBuild(cfg *Goblin, buildName string, timeStamp string) {
-	bc := cfg.Builds[buildName]
+	bc := cfg.builds[buildName]
 	if bc == nil {
 		log.Fatal("No build found with name " + buildName)
 	}

@@ -2,7 +2,6 @@
 package cibuild
 
 import (
-	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
@@ -14,16 +13,22 @@ type DockerBuildStep struct {
 	image string
 }
 
-func newBuildStep(index int, sr *config.StepRecord) (*DockerBuildStep, error) {
+func newBuildStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, error) {
 	if !sr.HasParameter(ImageKey) {
-		return nil, errors.New(DockerBuildStepType + " requires " + ImageKey)
+		return stepParamRequired(DockerBuild, ImageKey)
 	}
+
+	err := vv.ValidateValue(sr.Image)
+	if err != nil {
+		return stepParamError(DockerBuild, ImageKey, err)
+	}
+
 	return &DockerBuildStep{index: index, image: sr.Image}, nil
 }
 
-func (dbs *DockerBuildStep) Step(build *Build) error {
-	pfx := build.stepPrefix(dbs.index)
-	fmt.Println(pfx, DockerBuildStepType, dbs.image)
+func (dbs *DockerBuildStep) Step(se StepEnvironment) error {
+	pfx := se.StepPrefix(dbs.index)
+	fmt.Println(pfx, DockerBuild, dbs.image)
 	cmd := exec.Command(
 		"docker",
 		"build",
@@ -36,6 +41,6 @@ func (dbs *DockerBuildStep) Step(build *Build) error {
 	return command.Run(cmd, pfx)
 }
 
-func (dbs *DockerBuildStep) Cleanup(build *Build) {
+func (dbs *DockerBuildStep) Cleanup(se StepEnvironment) {
 	// intentionally left blank
 }

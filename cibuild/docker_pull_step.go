@@ -2,7 +2,6 @@
 package cibuild
 
 import (
-	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/command"
 	"github.com/dmcsorley/goblin/config"
@@ -14,16 +13,22 @@ type DockerPullStep struct {
 	image string
 }
 
-func newPullStep(index int, sr *config.StepRecord) (*DockerPullStep, error) {
+func newPullStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, error) {
 	if !sr.HasParameter(ImageKey) {
-		return nil, errors.New(DockerPullStepType + " requires " + ImageKey)
+		return stepParamRequired(DockerPull, ImageKey)
 	}
+
+	err := vv.ValidateValue(sr.Image)
+	if err != nil {
+		return stepParamError(DockerPull, ImageKey, err)
+	}
+
 	return &DockerPullStep{index: index, image: sr.Image}, nil
 }
 
-func (dbs *DockerPullStep) Step(build *Build) error {
-	pfx := build.stepPrefix(dbs.index)
-	fmt.Println(pfx, DockerPullStepType, dbs.image)
+func (dbs *DockerPullStep) Step(se StepEnvironment) error {
+	pfx := se.StepPrefix(dbs.index)
+	fmt.Println(pfx, DockerPull, dbs.image)
 	cmd := exec.Command(
 		"docker",
 		"pull",
@@ -32,6 +37,6 @@ func (dbs *DockerPullStep) Step(build *Build) error {
 	return command.Run(cmd, pfx)
 }
 
-func (dbs *DockerPullStep) Cleanup(build *Build) {
+func (dbs *DockerPullStep) Cleanup(se StepEnvironment) {
 	// intentionally left blank, un-pulling an image doesn't make sense
 }

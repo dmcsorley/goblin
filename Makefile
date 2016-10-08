@@ -24,10 +24,10 @@ inc:
 deps:
 	docker build --pull=true --no-cache -t dmcsorley/goblin:deps -f Dockerfile.deps .
 
-goblinimage:
+image:
 	docker build --pull=true --no-cache -t dmcsorley/goblin .
 	
-goblin: buildfromdeps goblinimage
+goblin: buildfromdeps image
 
 example:
 	cd example && docker build --no-cache -t $(EXAMPLEIMAGE) .

@@ -184,7 +184,7 @@ func TestValueValidationAndReplacement(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		err := ve.Validate(tc.input)
+		err := ve.ValidateValue(tc.input)
 		if tc.valid {
 			if err != nil {
 				t.Errorf("'%s' should have passed but got: %v", tc.input, err)
