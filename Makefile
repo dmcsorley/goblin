@@ -7,6 +7,9 @@ EXAMPLEIMAGE=dmcsorley/goblin-example
 
 .PHONY: build test fmt inc deps goblin example runlogstash runlogspout runexample runall
 
+buildfromdeps:
+	docker run -it --rm -w $(DIR) -v $$PWD:$(DIR) dmcsorley/goblin:deps bash -c "go install -v && cp /go/bin/goblin ./bin/"
+
 build: deps goblin
 
 test:
@@ -20,9 +23,6 @@ inc:
 
 deps:
 	docker build --pull=true --no-cache -t dmcsorley/goblin:deps -f Dockerfile.deps .
-
-buildfromdeps:
-	docker run -it --rm -w $(DIR) -v $$PWD:$(DIR) dmcsorley/goblin:deps bash -c "go install -v && cp /go/bin/goblin ./bin/"
 
 goblinimage:
 	docker build --pull=true --no-cache -t dmcsorley/goblin .
