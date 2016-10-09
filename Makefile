@@ -5,9 +5,9 @@ SOCKV=-v /var/run/docker.sock:/var/run/docker.sock
 LOGSPOUTIGNORE=-e LOGSPOUT=ignore
 EXAMPLEIMAGE=dmcsorley/goblin-example
 
-.PHONY: build test fmt inc deps goblin example runlogstash runlogspout runexample runall
+.PHONY: fromdeps build test fmt inc deps image goblin example runlogstash runlogspout runexample runall
 
-buildfromdeps:
+fromdeps:
 	docker run -it --rm -w $(DIR) -v $$PWD:$(DIR) dmcsorley/goblin:deps bash -c "go install -v && cp /go/bin/goblin ./bin/"
 
 build: deps goblin
@@ -27,7 +27,7 @@ deps:
 image:
 	docker build --pull=true --no-cache -t dmcsorley/goblin .
 	
-goblin: buildfromdeps image
+goblin: fromdeps image
 
 example:
 	cd example && docker build --no-cache -t $(EXAMPLEIMAGE) .
