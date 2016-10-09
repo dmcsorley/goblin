@@ -28,13 +28,18 @@ func newBuildStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper,
 
 func (dbs *DockerBuildStep) Step(se StepEnvironment) error {
 	pfx := se.StepPrefix(dbs.index)
-	fmt.Println(pfx, DockerBuild, dbs.image)
+	image, err := se.ResolveValues(dbs.image)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(pfx, DockerBuild, image)
 	cmd := exec.Command(
 		"docker",
 		"build",
 		"--force-rm",
 		"-t",
-		dbs.image,
+		image,
 		".",
 	)
 	cmd.Dir = WorkDir

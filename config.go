@@ -11,6 +11,7 @@ import (
 
 type Goblin struct {
 	builds map[string]*cibuild.BuildConfig
+	values cibuild.ValueResolver
 }
 
 func loadConfig(filename string) (*Goblin, error) {
@@ -43,7 +44,10 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		values.AddValue(v)
 	}
 
-	sc := &Goblin{builds: map[string]*cibuild.BuildConfig{}}
+	sc := &Goblin{
+		builds: map[string]*cibuild.BuildConfig{},
+		values: values,
+	}
 	for name, br := range cr.Builds {
 		bc, err := newBuild(name, br, values)
 		if err != nil {

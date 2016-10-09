@@ -8,6 +8,7 @@ import (
 	"github.com/dmcsorley/goblin/gobdocker"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 )
 
@@ -27,6 +28,7 @@ type Build struct {
 	Id       string
 	received time.Time
 	config   *BuildConfig
+	resolver ValueResolver
 }
 
 func buildHash(timestamp string, buildName string) string {
@@ -36,12 +38,17 @@ func buildHash(timestamp string, buildName string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func New(t time.Time, bc *BuildConfig) *Build {
+type ValueResolver interface {
+	ResolveValues(string) (string, error)
+}
+
+func New(t time.Time, bc *BuildConfig, vr ValueResolver) *Build {
 	id := buildHash(t.Format(TimeFormat), bc.Name)
 	return &Build{
 		Id:       id,
 		received: t,
 		config:   bc,
+		resolver: vr,
 	}
 }
 
@@ -60,8 +67,16 @@ func (build *Build) Run() {
 	fmt.Println(build.Id, "SUCCESS")
 }
 
+func (build *Build) StepPrefix(index int) string {
+	return build.Id[0:20] + "-" + strconv.Itoa(index)
+}
+
 func (build *Build) VolumeName() string {
 	return VolumePrefix + build.Id
+}
+
+func (build *Build) ResolveValues(param string) (string, error) {
+	return build.resolver.ResolveValues(param)
 }
 
 func (build *Build) createVolume() (string, error) {

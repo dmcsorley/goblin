@@ -88,7 +88,7 @@ func serve(cfg *Goblin) {
 			if debugFlag {
 				fmt.Println("DEBUG", dumpRequest(r))
 			}
-			build := cibuild.New(now, localConfig)
+			build := cibuild.New(now, localConfig, cfg.values)
 			fmt.Println(build.Id, "Received build for", r.URL.Path)
 			w.WriteHeader(http.StatusOK)
 			go build.DockerRun(image)
@@ -110,6 +110,6 @@ func runBuild(cfg *Goblin, buildName string, timeStamp string) {
 		log.Fatal(err)
 	}
 
-	build := cibuild.New(t, bc)
+	build := cibuild.New(t, bc, cfg.values)
 	build.Run()
 }

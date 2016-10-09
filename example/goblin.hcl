@@ -10,10 +10,12 @@ value "DOCKER_HUB_NAME" {
  Values can also be set from environment variables.
  */
 value "DOCKER_HUB_EMAIL" {
+  literal = "boo"
   env = "GOBLIN_DOCKER_HUB_EMAIL"
 }
 
 value "DOCKER_HUB_PASSWORD" {
+  literal = "boo"
   env = "GOBLIN_DOCKER_HUB_PASSWORD"
 }
 

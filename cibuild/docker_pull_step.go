@@ -26,17 +26,22 @@ func newPullStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, 
 	return &DockerPullStep{index: index, image: sr.Image}, nil
 }
 
-func (dbs *DockerPullStep) Step(se StepEnvironment) error {
-	pfx := se.StepPrefix(dbs.index)
-	fmt.Println(pfx, DockerPull, dbs.image)
+func (dps *DockerPullStep) Step(se StepEnvironment) error {
+	pfx := se.StepPrefix(dps.index)
+	image, err := se.ResolveValues(dps.image)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(pfx, DockerPull, image)
 	cmd := exec.Command(
 		"docker",
 		"pull",
-		dbs.image,
+		image,
 	)
 	return command.Run(cmd, pfx)
 }
 
-func (dbs *DockerPullStep) Cleanup(se StepEnvironment) {
+func (dps *DockerPullStep) Cleanup(se StepEnvironment) {
 	// intentionally left blank, un-pulling an image doesn't make sense
 }

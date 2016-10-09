@@ -169,7 +169,7 @@ func (ve *ValueEngine) ValidateValue(astring string) error {
 	return nil
 }
 
-func (ve *ValueEngine) Replace(astring string) (string, error) {
+func (ve *ValueEngine) ResolveValues(astring string) (string, error) {
 	s := bufio.NewScanner(strings.NewReader(astring))
 	s.Split(tokenize)
 

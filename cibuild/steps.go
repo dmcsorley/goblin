@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dmcsorley/goblin/config"
-	"strconv"
 )
 
 type StepType string
@@ -29,10 +28,7 @@ type Stepper interface {
 type StepEnvironment interface {
 	StepPrefix(index int) string
 	VolumeName() string
-}
-
-func (build *Build) StepPrefix(index int) string {
-	return build.Id[0:20] + "-" + strconv.Itoa(index)
+	ResolveValues(string) (string, error)
 }
 
 type ValueValidator interface {

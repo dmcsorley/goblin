@@ -144,7 +144,7 @@ build "foo" {
 	}
 }
 
-func TestValueValidationAndReplacement(t *testing.T) {
+func TestValueValidationAndResolution(t *testing.T) {
 	ve := NewValueEngine()
 	ve.AddValue(&ValueRecord{
 		Name:          "qwerty",
@@ -189,7 +189,7 @@ func TestValueValidationAndReplacement(t *testing.T) {
 			if err != nil {
 				t.Errorf("'%s' should have passed but got: %v", tc.input, err)
 			} else {
-				output, err := ve.Replace(tc.input)
+				output, err := ve.ResolveValues(tc.input)
 				if err != nil {
 					t.Error(err)
 				} else if output != tc.output {

@@ -54,10 +54,18 @@ func (drs *DockerRunStep) Step(se StepEnvironment) error {
 
 	workDir := WorkDir
 	if drs.dir != "" {
-		workDir = drs.dir
+		dir, err := se.ResolveValues(drs.dir)
+		if err != nil {
+			return err
+		}
+		workDir = dir
 	}
 
 	containerName := BuildContainerPrefix + pfx
+	image, err := se.ResolveValues(drs.image)
+	if err != nil {
+		return err
+	}
 
 	args := []string{
 		"run",
@@ -68,17 +76,21 @@ func (drs *DockerRunStep) Step(se StepEnvironment) error {
 		se.VolumeName() + ":" + workDir,
 		"-w",
 		workDir,
-		drs.image,
+		image,
 	}
 
 	if drs.cmd != "" {
-		args = append(args, "bash", "-c", drs.cmd)
+		cmd, err := se.ResolveValues(drs.cmd)
+		if err != nil {
+			return err
+		}
+		args = append(args, "bash", "-c", cmd)
 	}
 
-	fmt.Println(pfx, DockerRun, drs.image)
+	fmt.Println(pfx, DockerRun, image)
 
 	cmd := exec.Command("docker", args...)
-	err := command.Run(cmd, pfx)
+	err = command.Run(cmd, pfx)
 	if err != nil {
 		return err
 	}

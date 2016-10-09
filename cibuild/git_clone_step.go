@@ -28,15 +28,20 @@ func newCloneStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper,
 
 func (gcs *GitCloneStep) Step(se StepEnvironment) error {
 	pfx := se.StepPrefix(gcs.index)
-	fmt.Println(pfx, GitClone, gcs.url)
+	url, err := se.ResolveValues(gcs.url)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(pfx, GitClone, url)
 	cmd := exec.Command(
 		"git",
 		"clone",
-		gcs.url,
+		url,
 		".",
 	)
 	cmd.Dir = WorkDir
-	err := command.Run(cmd, pfx)
+	err = command.Run(cmd, pfx)
 
 	if err != nil {
 		return err
