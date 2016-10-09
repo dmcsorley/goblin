@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"github.com/hashicorp/hcl"
+	"os"
 	"strings"
 )
 
@@ -15,6 +16,7 @@ type Record struct {
 type ValueRecord struct {
 	Name          string `hcl:",key"`
 	Literal       string
+	Env           string
 	DecodedFields []string `hcl:",decodedFields"`
 }
 
@@ -45,7 +47,15 @@ func (vr *ValueRecord) HasField(s string) bool {
 }
 
 func (vr *ValueRecord) value() string {
-	return vr.Literal
+	if hasField(vr.DecodedFields, "literal") {
+		return vr.Literal
+	}
+
+	if hasField(vr.DecodedFields, "env") {
+		return os.Getenv(vr.Env)
+	}
+
+	return ""
 }
 
 func (sr *StepRecord) HasParameter(s string) bool {
@@ -101,8 +111,8 @@ func NewValueEngine() *ValueEngine {
 	return &ValueEngine{values: map[string]*ValueRecord{}}
 }
 
-func (ve *ValueEngine) AddValue(value *ValueRecord) {
-	ve.values[value.Name] = value
+func (ve *ValueEngine) AddValue(vr *ValueRecord) {
+	ve.values[vr.Name] = vr
 }
 
 func (ve *ValueEngine) HasValue(name string) bool {

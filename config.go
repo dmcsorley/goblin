@@ -38,7 +38,8 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		if values.HasValue(v.Name) {
 			return nil, fmt.Errorf("duplicate value '%s'", v.Name)
 		}
-		if !v.HasField("Literal") {
+
+		if !v.HasField("Literal") || !v.HasField("Env") {
 			return nil, fmt.Errorf("no value for '%s'", v.Name)
 		}
 		values.AddValue(v)
