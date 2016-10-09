@@ -7,6 +7,7 @@ import (
 	"github.com/dmcsorley/goblin/cibuild"
 	"github.com/dmcsorley/goblin/config"
 	"io/ioutil"
+	"os"
 )
 
 type Goblin struct {
@@ -42,6 +43,11 @@ func configRecordAsGoblin(cr *config.Record) (*Goblin, error) {
 		if !v.HasField("Literal") && !v.HasField("Env") {
 			return nil, fmt.Errorf("no value for '%s'", v.Name)
 		}
+
+		if v.HasField("Env") && os.Getenv(v.Env) == "" {
+			return nil, fmt.Errorf("no env value set for '%s'", v.Env)
+		}
+
 		values.AddValue(v)
 	}
 
