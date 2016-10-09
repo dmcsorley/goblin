@@ -40,6 +40,7 @@ func buildHash(timestamp string, buildName string) string {
 
 type ValueResolver interface {
 	ResolveValues(string) (string, error)
+	EnvVars() []string
 }
 
 func New(t time.Time, bc *BuildConfig, vr ValueResolver) *Build {
@@ -95,25 +96,33 @@ func (build *Build) DockerRun(image string) {
 
 	ts := build.received.Format(TimeFormat)
 
-	cmd := exec.Command(
-		"docker",
+	args := []string{
 		"run",
 		"-d",
-		"--label=goblin.build="+build.config.Name,
-		"--label=goblin.id="+build.Id,
-		"--label=goblin.time="+ts,
-		"--name="+containerName,
+		"--label=goblin.build=" + build.config.Name,
+		"--label=goblin.id=" + build.Id,
+		"--label=goblin.time=" + ts,
+		"--name=" + containerName,
 		"-v",
-		volumeName+":"+WorkDir,
+		volumeName + ":" + WorkDir,
 		"-v",
 		"/var/run/docker.sock:/var/run/docker.sock",
+	}
+
+	for _, env := range build.resolver.EnvVars() {
+		args = append(args, "--env="+env)
+	}
+
+	args = append(args, []string{
 		image,
 		"goblin",
 		"-run",
 		build.config.Name,
 		"-time",
 		ts,
-	)
+	}...)
+
+	cmd := exec.Command("docker", args...)
 	cmd.Run()
 }
 

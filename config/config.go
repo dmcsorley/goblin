@@ -119,6 +119,16 @@ func (ve *ValueEngine) HasValue(name string) bool {
 	return ve.values[name] != nil
 }
 
+func (ve *ValueEngine) EnvVars() []string {
+	names := []string{}
+	for _, vr := range ve.values {
+		if vr.HasField("env") {
+			names = append(names, vr.Env)
+		}
+	}
+	return names
+}
+
 type parseState int
 
 const (
