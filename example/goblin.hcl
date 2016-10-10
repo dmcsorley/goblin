@@ -9,10 +9,6 @@ value "DOCKER_HUB_NAME" {
 /*
  Values can also be set from environment variables.
  */
-value "DOCKER_HUB_EMAIL" {
-  env = "GOBLIN_DOCKER_HUB_EMAIL"
-}
-
 value "DOCKER_HUB_PASSWORD" {
   env = "GOBLIN_DOCKER_HUB_PASSWORD"
 }
@@ -62,6 +58,12 @@ build "goblin" {
   # docker build in the working directory using the default Dockerfile
   step docker-build {
     image = "${DOCKER_HUB_NAME}/goblin"
+  }
+
+  # login to docker hub
+  step docker-login {
+    username = "${DOCKER_HUB_NAME}"
+    password = "${DOCKER_HUB_PASSWORD}"
   }
 
   # At the end of the build, everything is unwound; images, containers, and volumes are removed

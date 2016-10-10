@@ -4,7 +4,7 @@ LOGOPT=--log-opt max-size=10m --log-opt max-file=5
 SOCKV=-v /var/run/docker.sock:/var/run/docker.sock
 LOGSPOUTIGNORE=-e LOGSPOUT=ignore
 EXAMPLEIMAGE=dmcsorley/goblin-example
-GOBENV=-e GOBLIN_DOCKER_HUB_EMAIL -e GOBLIN_DOCKER_HUB_PASSWORD
+GOBENV=-e GOBLIN_DOCKER_HUB_PASSWORD
 
 .PHONY: fromdeps build test fmt inc deps image goblin example runlogstash runlogspout runexample runall
 

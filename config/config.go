@@ -30,6 +30,8 @@ type StepRecord struct {
 	Image         string
 	Cmd           string
 	Dir           string
+	Username      string
+	Password      string
 	DecodedFields []string `hcl:",decodedFields"`
 }
 

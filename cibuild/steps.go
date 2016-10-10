@@ -14,10 +14,13 @@ const (
 	DockerBuild StepType = "docker-build"
 	DockerRun   StepType = "docker-run"
 	DockerPull  StepType = "docker-pull"
+	DockerLogin StepType = "docker-login"
 	UrlKey               = "url"
 	ImageKey             = "image"
 	DirKey               = "dir"
 	CmdKey               = "cmd"
+	UsernameKey          = "username"
+	PasswordKey          = "password"
 )
 
 type Stepper interface {
@@ -53,6 +56,8 @@ func NewStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, erro
 		return newRunStep(index, sr, vv)
 	case DockerPull:
 		return newPullStep(index, sr, vv)
+	case DockerLogin:
+		return newLoginStep(index, sr, vv)
 	default:
 		return nil, errors.New(fmt.Sprintf("Unknown step %v", sr.Type))
 	}
