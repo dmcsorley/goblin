@@ -6,12 +6,12 @@ LOGSPOUTIGNORE=-e LOGSPOUT=ignore
 EXAMPLEIMAGE=dmcsorley/goblin-example
 GOBENV=-e GOBLIN_DOCKER_HUB_PASSWORD
 
-.PHONY: fromdeps build test fmt inc deps image goblin example runlogstash runlogspout runexample runall
+.PHONY: fromdeps all test fmt inc deps image goblin example runlogstash runlogspout runexample runall
 
 fromdeps:
 	docker run -it --rm -w $(DIR) -v $$PWD:$(DIR) dmcsorley/goblin:deps bash -c "go install -v && cp /go/bin/goblin ./bin/"
 
-build: deps goblin
+all: goblin example
 
 test:
 	go test -v $(PACKAGE) $(PACKAGE)/cibuild $(PACKAGE)/config
@@ -27,8 +27,8 @@ deps:
 
 image:
 	docker build --pull=true --no-cache -t dmcsorley/goblin .
-	
-goblin: fromdeps image
+
+goblin: deps fromdeps image
 
 example:
 	cd example && docker build --no-cache -t $(EXAMPLEIMAGE) .
