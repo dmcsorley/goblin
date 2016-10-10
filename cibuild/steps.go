@@ -14,6 +14,7 @@ const (
 	DockerBuild StepType = "docker-build"
 	DockerRun   StepType = "docker-run"
 	DockerPull  StepType = "docker-pull"
+	DockerPush  StepType = "docker-push"
 	DockerLogin StepType = "docker-login"
 	UrlKey               = "url"
 	ImageKey             = "image"
@@ -56,6 +57,8 @@ func NewStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, erro
 		return newRunStep(index, sr, vv)
 	case DockerPull:
 		return newPullStep(index, sr, vv)
+	case DockerPush:
+		return newPushStep(index, sr, vv)
 	case DockerLogin:
 		return newLoginStep(index, sr, vv)
 	default:

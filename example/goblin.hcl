@@ -66,7 +66,12 @@ build "goblin" {
     password = "${DOCKER_HUB_PASSWORD}"
   }
 
-  # At the end of the build, everything is unwound; images, containers, and volumes are removed
+  # push the image we built to docker hub
+  step docker-push {
+    image = "${DOCKER_HUB_NAME}/goblin:latest"
+  }
+
+  # At the end of the build, everything is unwound; containers and volumes are removed
 }
 
 # A simpler build, with a single-step build from scratch
