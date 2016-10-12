@@ -35,7 +35,7 @@ example:
 	cd example && docker build --no-cache -t $(EXAMPLEIMAGE) .
 
 runlogstash:
-	docker run -d --name logstash $(RESTART) $(LOGOPT) -v $$PWD/example/logstash.conf:/etc/logstash.conf $(LOGSPOUTIGNORE) -p 5000:5000 logstash -f /etc/logstash.conf
+	docker run -d --name logstash $(RESTART) $(LOGOPT) -v $$PWD/example/logstash.conf:/etc/logstash.conf $(LOGSPOUTIGNORE) logstash -f /etc/logstash.conf
 
 runlogspout:
 	docker run -d --name logspout $(RESTART) $(LOGOPT) $(SOCKV) $(LOGSPOUTIGNORE) gliderlabs/logspout \
