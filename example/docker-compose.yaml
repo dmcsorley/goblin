@@ -1,0 +1,52 @@
+version: '2'
+services:
+  logstash:
+    expose:
+    - '5000'
+    volumes:
+    - ./logstash.conf:/etc/logstash.conf:ro
+    restart: always
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '5'
+    environment:
+      LOGSPOUT: ignore
+    image: logstash
+    command: -f /etc/logstash.conf
+  logspout:
+    depends_on:
+    - logstash
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '5'
+    environment:
+      LOGSPOUT: ignore
+    links:
+    - logstash:logstash
+    image: gliderlabs/logspout
+    command:
+      syslog://logstash:5000?filter.name=*goblin-*
+  goblin-example:
+    build: .
+    depends_on:
+    - logspout
+    - logstash
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    restart: always
+    logging:
+      options:
+        max-size: '10m'
+        max-file: '5'
+    environment:
+      IMAGE: dmcsorley/goblin-example
+      GOBLIN_DOCKER_HUB_PASSWORD:
+    ports:
+    - "8080:80"
+    image: dmcsorley/goblin-example
+
