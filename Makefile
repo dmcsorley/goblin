@@ -1,5 +1,6 @@
 PACKAGE=github.com/dmcsorley/goblin
 DIR=/go/src/$(PACKAGE)
+RESTART=--restart=always
 LOGOPT=--log-opt max-size=10m --log-opt max-file=5
 SOCKV=-v /var/run/docker.sock:/var/run/docker.sock
 LOGSPOUTIGNORE=-e LOGSPOUT=ignore
@@ -34,10 +35,10 @@ example:
 	cd example && docker build --no-cache -t $(EXAMPLEIMAGE) .
 
 runlogstash:
-	docker run -d --name logstash $(LOGOPT) -v $$PWD/example/logstash.conf:/etc/logstash.conf $(LOGSPOUTIGNORE) -p 5000:5000 logstash -f /etc/logstash.conf
+	docker run -d --name logstash $(RESTART) $(LOGOPT) -v $$PWD/example/logstash.conf:/etc/logstash.conf $(LOGSPOUTIGNORE) -p 5000:5000 logstash -f /etc/logstash.conf
 
 runlogspout:
-	docker run -d --name logspout $(LOGOPT) $(SOCKV) $(LOGSPOUTIGNORE) gliderlabs/logspout \
+	docker run -d --name logspout $(RESTART) $(LOGOPT) $(SOCKV) $(LOGSPOUTIGNORE) gliderlabs/logspout \
 	syslog://$(shell docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' logstash):5000?filter.name=goblin-*
 
 runexample:
