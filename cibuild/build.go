@@ -67,10 +67,10 @@ func (build *Build) Run() {
 
 func runSteps(build *Build) error {
 	for _, s := range build.config.Steps {
-		time.Sleep(3*time.Second)
+		time.Sleep(3 * time.Second)
 		step := s
 		defer func() {
-			time.Sleep(3*time.Second)
+			time.Sleep(3 * time.Second)
 			step.Cleanup(build)
 		}()
 		err := s.Step(build)
