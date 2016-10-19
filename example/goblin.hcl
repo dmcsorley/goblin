@@ -15,7 +15,15 @@ value "DOCKER_HUB_PASSWORD" {
 
 /*
  Builds occur in an isolated container, launched by the parent goblin process.
- The build containers have a docker volume mounted at /tmp/workdir by default.
+
+ Build containers have a working docker volume mounted at /tmp/workdir by default.
+
+ This is an example of two-phase build:
+  - phase one, compile the executable
+  - phase two, build a docker image containing the executable
+
+ Built this way, the container you launch at
+ runtime doesn't contain your build dependencies.
  */
 build "goblin" {
   # clone the repository from `url` into the working directory
