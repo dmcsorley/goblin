@@ -56,16 +56,30 @@ func New(t time.Time, bc *BuildConfig, vr ValueResolver) *Build {
 func (build *Build) Run() {
 	fmt.Println(build.Id, "STARTING", build.config.Name)
 
-	for _, s := range build.config.Steps {
-		defer s.Cleanup(build)
-		err := s.Step(build)
-		if err != nil {
-			fmt.Println(build.Id, "ERROR", err)
-			os.Exit(1)
-		}
+	err := runSteps(build)
+	if err != nil {
+		fmt.Println(build.Id, "ERROR", err)
+		os.Exit(1)
 	}
 
 	fmt.Println(build.Id, "SUCCESS")
+}
+
+func runSteps(build *Build) error {
+	for _, s := range build.config.Steps {
+		time.Sleep(3*time.Second)
+		step := s
+		defer func() {
+			time.Sleep(3*time.Second)
+			step.Cleanup(build)
+		}()
+		err := s.Step(build)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (build *Build) StepPrefix(index int) string {

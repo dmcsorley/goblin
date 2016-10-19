@@ -7,7 +7,6 @@ import (
 	"github.com/dmcsorley/goblin/config"
 	"github.com/dmcsorley/goblin/gobdocker"
 	"os/exec"
-	"time"
 )
 
 type DockerRunStep struct {
@@ -50,7 +49,6 @@ func newRunStep(index int, sr *config.StepRecord, vv ValueValidator) (Stepper, e
 
 func (drs *DockerRunStep) Step(se StepEnvironment) error {
 	pfx := se.StepPrefix(drs.index)
-	time.Sleep(5 * time.Second)
 
 	workDir := WorkDir
 	if drs.dir != "" {
